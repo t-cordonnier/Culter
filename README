@@ -1,0 +1,20 @@
+DESCRIPTION:
+============
+
+Culter is a set of Ruby classes to divide text into phrases (segments).
+Currently it implements only a very simple algorithm.
+
+USAGE:
+======
+
+This is a library to be used inside Ruby programs: require 'culter/simple'.
+See bin/culter.rb for example of usage.
+
+The script bin/culter.rb will act as an Unix text filter: 
+STDIN will contain paragraphs, and STDOUT will contain them cut by phrases.
+
+LICENSE:
+========
+
+Please read the file LICENSE for the very last version of conditions applied to this code.
+
