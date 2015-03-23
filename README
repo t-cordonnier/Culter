@@ -7,11 +7,13 @@ Currently it implements only a very simple algorithm.
 USAGE:
 ======
 
-This is a library to be used inside Ruby programs: require 'culter/simple'.
+This is a library to be used inside Ruby programs.
 See bin/culter.rb for example of usage.
 
 The script bin/culter.rb will act as an Unix text filter: 
 STDIN will contain paragraphs, and STDOUT will contain them cut by phrases.
+Takes two parameters: segmentation rules file (srx), and language.
+Without parameter it will run the simple segmenter.
 
 LICENSE:
 ========
