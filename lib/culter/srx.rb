@@ -39,7 +39,7 @@ module Culter::SRX
 	class SrxCallbacks 	# :nodoc: all
 		include REXML::StreamListener
 		
-		attr_reader :langRules, :mapRules, :defaultMapRule, :cascade
+		attr_reader :langRules, :mapRules, :defaultMapRule, :cascade, :formatHandle
 		
 		def initialize()
 			@langRules = {}
@@ -47,12 +47,15 @@ module Culter::SRX
 			@curMapRule = @defaultMapRule
 			@mapRules = {}
 			@where = ''
-			@cascade = false					# default
+			@cascade = false			# default
+			@formatHandle = { 'start' => false, 'end' => true, 'isolated' => true }
 		end
 		
 		def tag_start(element, attributes)
 			if element == 'header'
 				if attributes['cascade'] == 'yes' then @cascade = true end
+			elsif element == 'formathandle'
+				@formatHandle[attributes['type']] = (attributes['include'] == 'yes')
 			elsif element == 'languagemap'
 				@curLangMap = LangMap.new(attributes['languagepattern'], attributes['languagerulename'])
 				@curMapRule << @curLangMap
@@ -102,6 +105,7 @@ module Culter::SRX
 			@mapRules = callback.mapRules
 			@defaultMapRule = callback.defaultMapRule
 			@langRules = callback.langRules
+			@formatHandle = callback.formatHandle
 		rescue Exception => e
 			puts "Error during parsing: #{e}"
 		end
@@ -115,29 +119,39 @@ module Culter::SRX
 			map.each do |langMap|
 				if langMap.matches(lang) then
 					@langRules[langMap.rulename].each { |r| rules << r }
-					if not(@cascade) then return Segmenter.new(rules) end
+					if not(@cascade) then return Segmenter.new(rules,@formatHandle) end
 				end
 			end
 			puts "#{rules.count} rules found."
-			return Segmenter.new(rules)
+			return Segmenter.new(rules,@formatHandle)
 		end
 		
 	end
 	
 	class Segmenter
 	
-		def initialize(rules)
+		attr_reader :tagStart, :tagEnd, :tagIsolated
+	
+		def initialize(rules,formatHandle)
 			@rules = rules
+			@formatHandle = formatHandle
+			@tagStart = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*>'
+			@tagEnd = '</\w[\w\-]*?\s*>'
+			@tagIsolated = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*\s*/\s*>'
 		end
 	
 		def cut(st)
+			st = st.clone
 			st.force_encoding('UTF-8')	# else, \uE000n may not work
 			@rules.each do |rule|
-				if rule.break then
-					st.gsub! /(#{rule.before})(#{rule.after})/, "\\1\uE001\\2"
-				else
-					st.gsub! /(#{rule.before})(#{rule.after})/, "\\1\uE000\\2"	
-				end
+				before = []; after = []
+				if @formatHandle['start'] then before << @tagStart else after << @tagStart end 
+				if @formatHandle['end'] then before << @tagEnd else after << @tagEnd end 
+				if @formatHandle['isolated'] then before << @tagIsolated else after << @tagIsolated end 
+				if before.count > 0 then before = "#{rule.before}(?:" + before.join('|') + ")*" else before = rule.before end
+				if after.count > 0 then after = "(?:" + after.join('|') + ")*#{rule.after}" else after = rule.after end				
+				if rule.break then subst = "\\1\uE001\\2" else subst = "\\1\uE000\\2" end
+				st.gsub! /(#{before})(#{after})/u, subst
 			end
 			st.gsub!("\uE000", '')
 			if block_given?

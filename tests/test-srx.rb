@@ -7,7 +7,11 @@ require './test-function.rb'
 
 srxAsString = <<'EOF'
 <srx version='2.0' xmlns='http://www.lisa.org/srx20'>
-	<header cascade="yes" />
+	<header cascade="yes">
+		<formathandle type="start" include="yes" />
+		<formathandle type="end" include="yes" />
+		<formathandle type="isolated" include="yes" />
+	</header>
 	<body>
 		<languagerules>
 			<languagerule languagerulename='English'>
@@ -15,16 +19,24 @@ srxAsString = <<'EOF'
 					<beforebreak>\b(Mrs?)\.</beforebreak>
 					<afterbreak>\s</afterbreak>
 				</rule>
+				<rule break="yes">
+					<beforebreak>[\!]</beforebreak>
+					<afterbreak>\s\P{Lower}</afterbreak>
+				</rule>
 			</languagerule>
 			<languagerule languagerulename='Français'>
 				<rule break="no">
 					<beforebreak>\b(Mr|Mmes?|Mlles?|n°s|approx|c.-à-d|chap|coeff|coll|div|fig)\.</beforebreak>
 					<afterbreak>\s</afterbreak>
 				</rule>
+				<rule break="yes">
+					<beforebreak>[\!]</beforebreak>
+					<afterbreak>\s\P{Lower}</afterbreak>
+				</rule>
 			</languagerule>
 			<languagerule languagerulename='All'>
 				<rule break="yes">
-					<beforebreak>[\.\?\!]</beforebreak>
+					<beforebreak>[\.\?]</beforebreak>
 					<afterbreak>\s\P{Lower}</afterbreak>
 				</rule>
 			</languagerule>
@@ -54,6 +66,28 @@ test "en", culter.segmenter('en').cut(line), [
 test "fr", culter.segmenter('fr').cut(line), [
 	"Here is Mrs.", " Untel.",		# Exception for Mrs. does not work (not in language 'fr')
 	" She came here!",
+	" All fine."
+]
+
+#	3. Test format handles
+
+line = "Here is Mrs. <i>Untel.</i> She came here! All fine."
+
+test "en", culter.segmenter('en').cut(line), [
+	"Here is Mrs. <i>Untel.</i>",			# closing tag in the initial string
+	" She came here!",
+	" All fine."
+]
+
+#	4. Test that if you delete cascade, you loose the rule about dot!
+
+srxAsString.gsub! /cascade="yes"/, 'cascade="no"'
+culter = Culter::SRX::SrxDocument.new srxAsString
+
+line = "Here is Mrs. Untel. She came here! All fine."
+
+test "cascade=no", culter.segmenter('en').cut(line), [
+	"Here is Mrs. Untel. She came here!",			# No cut on '.' (cascade=no!) but on !, yes
 	" All fine."
 ]
 
