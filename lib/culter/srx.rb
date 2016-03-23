@@ -20,6 +20,21 @@ module Culter::SRX
 		# setters for rules: even if the text uses parenthesis, avoid grouping
 		def before= (st) @before = st.gsub(/(?<!\\)\((?!\?[a-z]*:)/,'(?:') end
 		def after= (st) @after = st.gsub(/(?<!\\)\((?!\?[a-z]*:)/,'(?:') end
+        
+		def prepare!(segmenter,formatHandle)
+			before = []; after = []
+			if formatHandle['start'] then before << segmenter.tagStart else after << segmenter.tagStart end 
+			if formatHandle['end'] then before << segmenter.tagEnd else after << segmenter.tagEnd end 
+			if formatHandle['isolated'] then before << segmenter.tagIsolated else after << segmenter.tagIsolated end 
+			if before.count > 0 then before = "#{self.before}(?:" + before.join('|') + ")*" else before = self.before end
+			if after.count > 0 then after = "(?:" + after.join('|') + ")*#{self.after}" else after = self.after end				
+			@regex = %r{(#{before})(#{after})}
+		end
+		
+		def apply!(st)
+			if self.break then subst = "\\1\uE001\\2" else subst = "\\1\uE000\\2" end
+			st.gsub!(@regex, subst)
+		end        
 	end
 
 	class LangMap 	# :nodoc: all
@@ -138,21 +153,20 @@ module Culter::SRX
 			@tagStart = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*>'
 			@tagEnd = '</\w[\w\-]*?\s*>'
 			@tagIsolated = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*\s*/\s*>'
+			@rules.each { |rule| rule.prepare!(self,formatHandle) }
+		end
+		
+		def change_tags!(tagStart,tagEnd,tagIsolated)
+			@tagStart = tagStart
+			@tagEnd = tagEnd
+			@tagIsolated = tagIsolated
+			@rules.each { |rule| rule.prepare!(self,@formatHandle) }		
 		end
 	
 		def cut(st)
 			st = st.clone
 			st.force_encoding('UTF-8')	# else, \uE000n may not work
-			@rules.each do |rule|
-				before = []; after = []
-				if @formatHandle['start'] then before << @tagStart else after << @tagStart end 
-				if @formatHandle['end'] then before << @tagEnd else after << @tagEnd end 
-				if @formatHandle['isolated'] then before << @tagIsolated else after << @tagIsolated end 
-				if before.count > 0 then before = "#{rule.before}(?:" + before.join('|') + ")*" else before = rule.before end
-				if after.count > 0 then after = "(?:" + after.join('|') + ")*#{rule.after}" else after = rule.after end				
-				if rule.break then subst = "\\1\uE001\\2" else subst = "\\1\uE000\\2" end
-				st.gsub! /(#{before})(#{after})/u, subst
-			end
+			@rules.each { |rule| rule.apply!(st) }
 			st.gsub!("\uE000", '')
 			if block_given?
 				st.scan(/(.+?)(\uE001|$)/) { yield $1 }
@@ -161,6 +175,7 @@ module Culter::SRX
 			end
 		end
 	
+		def rulesCount() @rules.count end
 	end
 	
 end
