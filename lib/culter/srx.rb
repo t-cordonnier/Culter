@@ -137,7 +137,6 @@ module Culter::SRX
 					if not(@cascade) then return Segmenter.new(rules,@formatHandle) end
 				end
 			end
-			puts "#{rules.count} rules found."
 			return Segmenter.new(rules,@formatHandle)
 		end
 		
