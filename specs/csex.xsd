@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Schema for Culter Segmentation Extended (cse) format, xml version
+    
+    License: https://creativecommons.org/licenses/by-nd/4.0/ Creative Commons BY-ND
+        You are free to implement this specification, but you should not modify it.
+
+-->
+<xs:schema targetNamespace="http://culter.silvestris-lab.org/extended" xmlns="http://culter.silvestris-lab.org/extended"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+    
+	<xs:import schemaLocation="cscx.xsd"/>
+    
+    <xs:element name="protected-part">
+        <xs:complexType>
+            <xs:attribute name="begin" type="xs:string" use="required" />
+            <xs:attribute name="end" type="xs:string" use="required" />
+        </xs:complexType>    
+    </xs:element>
+    
+    <xs:element name="languagerule">
+        <xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="ruleSpec">
+					<xs:choice>
+						<xs:element ref="apply-rule-template" />
+						<xs:element ref="protected-part" />
+					</xs:choice>	
+				</xs:extension>
+			</xs:complexContent>
+            <xs:attribute name="languagerulename" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

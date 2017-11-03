@@ -36,6 +36,19 @@ else
 			raise ArgumentError.new("Missing language")
 		end
 		if verbose then puts "#{culter.rulesCount} rules found." end
+	elsif data =~ /\.csex$/
+		require 'culter/csex'
+		doc = Culter::CSEX::CsexDocument.new(data)
+		
+		data = ARGV.shift
+		if data =~ /^(.+):(.+)$/
+			culter = doc.segmenter($2,$1)
+		elsif data != nil
+			culter = doc.segmenter(data)
+		else
+			raise ArgumentError.new("Missing language")
+		end
+		if verbose then puts "#{culter.rulesCount} rules found."; puts "#{culter.protectedPartsCount} protected parts found." end
 	else
 		raise ArgumentError.new("#{data} is not a valid segmentation format")	
 	end
