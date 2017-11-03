@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Culter segmentation format, compatible (SRX-only), XML format
+-->
+<seg-rules xmlns="http://culter.silvestris-lab.org/compatible">
+    <rules-mapping cascade="true">
+        <languagemap languagepattern="[dD][eE](\W.*)?" languagerulename="Deutsch"/>
+        <languagemap languagepattern="[eE][nN](\W.*)?" languagerulename="English"/>
+        <languagemap languagepattern="[fF][rR](\W.*)?" languagerulename="Français"/>
+        <languagemap languagepattern=".*" languagerulename="Common"/>
+    </rules-mapping>
+    <!-- Rule templates: enable to repeat a standard schema -->
+    <rule-templates>
+        <rule-template name="abbreviations">
+            <rule-template-param name="words" join="|" />
+            <rewrite>
+                <rule break="no">
+                    <beforebreak>\b(%{words})\.</beforebreak>   <!-- avoids repeating dot at the end -->
+                    <afterbreak>\s</afterbreak>
+                </rule>
+            </rewrite>
+        </rule-template>
+        <rule-template name="ordinal followers">
+            <rule-template-param name="words" join="|" />
+            <rewrite>
+                <rule break="no">
+                    <beforebreak>[0-9]\.</beforebreak>
+                    <afterbreak>\s(%{words})</afterbreak>
+                </rule>
+            </rewrite>
+        </rule-template>        
+    </rule-templates>
+    <!-- Language rules -->
+    <languagerules>
+        <languagerule languagerulename="Common">
+            <rule break="yes">
+                <beforebreak>[\.\?\!]</beforebreak>
+                <afterbreak>\s\P{Lower}</afterbreak>
+            </rule>
+        </languagerule>
+        <languagerule languagerulename="Français">
+            <!-- Apply a template: this will generate one single rule with all abbreviations -->
+            <apply-rule-template name="abbreviations">
+                <loop param="words">
+                    <item>Mr</item>
+                    <item>Mmes?</item>
+                    <item>Mlles?</item>
+                    <item>n°s</item>
+                </loop>
+            </apply-rule-template>        
+            <!-- Shows sample of what template makes possible to simplify : -->
+            <rule break="no">
+                <beforebreak>\betc\.</beforebreak>
+                <afterbreak>\s</afterbreak>
+            </rule>
+            <!-- Equivalent in typed-rule is : 
+                <typed-rule><param name="word">ODB</param></typed-rule>
+            -->            
+        </languagerule>
+        <languagerule languagerulename="English">
+            <apply-rule-template name="abbreviations">
+                <loop param="words">
+                    <item>Dr</item>
+                    <item>Mr</item>
+                    <item>Mrs</item>
+                </loop>
+            </apply-rule-template>
+        </languagerule>
+        <languagerule languagerulename="Deutsch">
+            <apply-rule-template name="abbreviations">
+                <loop param="words">
+                    <item>GMBH</item>
+                    <item>HBF</item>
+                </loop>
+            </apply-rule-template>
+            <apply-rule-template name="ordinal followers">
+                <loop param="words">
+                    <item>Jahrhundert(s)?</item>
+                    <item>Tag(es|s|ung)?</item>
+                </loop>
+            </apply-rule-template>
+        </languagerule>
+    </languagerules>
+    
+</seg-rules>
+

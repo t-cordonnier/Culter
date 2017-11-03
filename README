@@ -12,7 +12,7 @@ See bin/culter.rb for example of usage.
 
 The script bin/culter.rb will act as an Unix text filter: 
 STDIN will contain paragraphs, and STDOUT will contain them cut by phrases.
-Takes two parameters: segmentation rules file (srx), and language.
+Takes two parameters: segmentation rules file (see samples and specs for supported formats), and language.
 Without parameter it will run the simple segmenter.
 Option -v gives more details also in STDOUT during segmentation (for debug)
 

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Schema for Culter Segmentation Compatible (csc) format, xml version
+    
+    License: https://creativecommons.org/licenses/by-nd/4.0/ Creative Commons BY-ND
+        You are free to implement this specification, but you should not modify it.
+
+-->
+<xs:schema targetNamespace="http://culter.silvestris-lab.org/compatible" xmlns="http://culter.silvestris-lab.org/compatible"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+    
+    <!-- These elements are identical to SRX -->
+	
+    <xs:element name="afterbreak">
+         <xs:complexType mixed="true"/>
+    </xs:element>
+    <xs:element name="beforebreak">
+        <xs:complexType mixed="true"/>
+    </xs:element>
+    
+    <xs:element name="languagemap">
+        <xs:complexType>
+            <xs:attribute name="languagerulename" type="xs:string" use="required" />
+            <xs:attribute name="languagepattern" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="languagerules">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="languagerule" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="rule">
+        <xs:annotation>
+            <xs:documentation>A break/no break rule</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="beforebreak" minOccurs="0"/>
+                <xs:element ref="afterbreak" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="break">
+                <xs:annotation>
+                    <xs:documentation>Determines whether this is a segment break or an exception rule</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="yes"/>
+                        <xs:enumeration value="no"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>	
+	
+    <xs:element name="formathandle">
+        <xs:annotation>
+            <xs:documentation>Determines which side of the segment break that formatting
+                information goes</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="include" use="required">
+                <xs:annotation>
+                    <xs:documentation>A value of "no" indicates that the format code does not belong
+                        to the segment being created. A value of "yes" indicates that the format code
+                        belongs to the segment being created.</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="yes"/>
+                        <xs:enumeration value="no"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="type" use="required">
+                <xs:annotation>
+                    <xs:documentation>The type of format for which behaviour is being defined. Can be
+                        "start", "end" or "isolated".</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="start"/>
+                        <xs:enumeration value="end"/>
+                        <xs:enumeration value="isolated"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    
+    <!-- Elements which are either specific or whose definition differs from SRX -->
+    
+    <xs:element name="format-handles">
+      <xs:complexType>
+	<xs:sequence>
+	  <xs:element name="formathandle" maxOccurs="3" />
+	</xs:sequence>
+      </xs:complexType>
+    </xs:element>
+      
+    <xs:element name="break-rule">
+        <xs:annotation>
+            <xs:documentation>Synonym for rule/break=yes</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="beforebreak" minOccurs="0"/>
+                <xs:element ref="afterbreak" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="exception-rule">
+        <xs:annotation>
+            <xs:documentation>Synonym for rule/break=no</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="beforebreak" minOccurs="0"/>
+                <xs:element ref="afterbreak" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:group name="ruleSpec">
+      <xs:choice>
+	<xs:element ref="rule" />
+	<xs:element ref="break-rule" />
+	<xs:element ref="exception-rule" />  
+      </xs:choice>
+    </xs:group>
+	
+    <xs:element name="languagerule">
+        <xs:complexType>
+            <xs:choice minOccurs="1" maxOccurs="unbounded">
+	      <xs:element ref="apply-rule-template" />
+	      <xs:group ref="ruleSpec" />
+            </xs:choice>	
+            <xs:attribute name="languagerulename" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+	
+    <xs:element name="rules-mapping">
+        <xs:annotation>
+            <xs:documentation>A set of language maps</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="languagemap" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="cascade" type="xs:boolean" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="seg-rules">
+        <xs:annotation>
+            <xs:documentation>Segmentation Rules format, with templates but compatible with SRX</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="format-handles"/>
+                <xs:element ref="rules-mapping"/>
+                <xs:element ref="rule-templates"/>
+                <xs:element ref="languagerules"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="rule-templates">
+        <xs:annotation>
+            <xs:documentation>A set of rule templates</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="rule-template" minOccurs="1" maxOccurs="unbounded">
+                    <!-- For the moment the engine supports only one parameter. In the future it should change. -->
+                    <xs:element name="rule-template-param" minOccurs="1" maxOccurs="1">
+		      <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="join" type="xs:string" use="optional" />    <!-- actually not really supported -->
+		      </xs:complexType>
+                    </xs:element>
+		    <xs:element name="rewrite"><xs:complexType><xs:group ref="ruleSpec" /></xs:complexType></xs:element>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="apply-rule-template">
+        <xs:annotation>
+            <xs:documentation>Generate one big rule with given parameters</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="loop" minOccurs="1" maxOccurs="1">
+		  <xs:complexType>
+                        <xs:choice minOccurs="1" maxOccurs="unbounded">							
+                            <xs:element name="item" type="xs:string" />
+                        </xs:choice>
+                        <xs:attribute name="param" type="xs:string" use="required" />
+		  </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>	
+	
+</xs:schema>
