@@ -35,6 +35,8 @@
 		<languagerule languagerulename="Common">
             <!-- say that we never cut inside parenthesis -->
             <protected-part begin="\(" end="\)" />  <!-- warning: use \ because these are regular expressions! -->
+            <protected-part begin="\[" end="\]" recursive="yes" />  <!-- recursive : [...[...]...] will be considered entirely -->
+            <protected-part begin="\{" end="\}" recursive="no" />  <!-- not recursive (default) : [...[...]...] will be considered until first ] -->
             <!-- usual rule -->
             <rule break="yes">
                 <beforebreak>[\.\?\!]</beforebreak>

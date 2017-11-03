@@ -13,15 +13,21 @@ require 'culter/cscx'
 module Culter::CSEX
 
 	class ProtectedPart
-		def initialize(pos,bg,en)
+		def initialize(pos,bg,en,recursive)
 			@begin = bg
 			@end = en
 			@pos = pos
+			@recursive = recursive
 		end
 		
 		def apply!(st,mem)            
 			i = 0
-			st.gsub! (/#{@begin}(.+?)#{@end}/) { |txt| mem << txt; i = i + 1; "\uE002#{@pos};#{i - 1}\uE002" }
+			if @recursive then
+				# Warning: may not work in alternate Ruby versions!
+				st.gsub! (/#{@begin}(.+|\g<0>)#{@end}/) { |txt| mem << txt; i = i + 1; "\uE002#{@pos};#{i - 1}\uE002" }
+			else
+				st.gsub! (/#{@begin}(.+?)#{@end}/) { |txt| mem << txt; i = i + 1; "\uE002#{@pos};#{i - 1}\uE002" }
+			end
 		end
         
 		def restore!(st,mem)
@@ -69,7 +75,7 @@ module Culter::CSEX
 		
 		def tag_start(element, attributes)
 			if element == 'protected-part'
-				@curProtectedParts << ProtectedPart.new(@protectedParts.count - 1, attributes['begin'], attributes['end'])
+				@curProtectedParts << ProtectedPart.new(@protectedParts.count - 1, attributes['begin'], attributes['end'], 'yes' == attributes['recursive'])
 			elsif element == 'languagerule'
 				@curProtectedParts = []
 				@protectedParts[attributes['languagerulename']] = @curProtectedParts

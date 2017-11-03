@@ -17,6 +17,8 @@
         <xs:complexType>
             <xs:attribute name="begin" type="xs:string" use="required" />
             <xs:attribute name="end" type="xs:string" use="required" />
+			<!-- Whenever application is recursive or not. Note that support for recursive expressions is not mandatory! -->
+            <xs:attribute name="recursive" type="xs:boolean" use="optional" />
         </xs:complexType>    
     </xs:element>
     
