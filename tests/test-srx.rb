@@ -5,6 +5,8 @@ require 'culter/srx'
 
 require './test-function.rb'
 
+$CULTER_VERBOSE = 5
+
 srxAsString = <<'EOF'
 <srx version='2.0' xmlns='http://www.lisa.org/srx20'>
 	<header cascade="yes">

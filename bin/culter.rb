@@ -2,11 +2,14 @@
 
 $LOAD_PATH << "#{File.dirname(__FILE__)}/../lib"                # For non-standard installation
 
-if not(ARGV.empty?) and (ARGV[0] =~ /-v/) then verbose = true; ARGV.shift end
+$CULTER_VERBOSE = 0 
+if not(ARGV.empty?) and (ARGV[0] =~ /-v/) then 
+  while ARGV[0] =~ /-(v+)/ do  $CULTER_VERBOSE = $CULTER_VERBOSE + $1.length; ARGV.shift ; end
+end
 
 if ARGV.empty?
 	require 'culter/simple'
-	if verbose then puts "Using simple segmenter" end
+	if $CULTER_VERBOSE > 0 then puts "Using simple segmenter" end
 	culter = Culter::Simple.new	
 else
 	data = ARGV.shift
@@ -22,7 +25,7 @@ else
 		else
 			raise ArgumentError.new("Missing language")
 		end
-		if verbose then puts "#{culter.rulesCount} rules found." end
+		if $CULTER_VERBOSE > 0 then puts "#{culter.rulesCount} rules found." end
 	elsif data =~ /\.cscx$/
 		require 'culter/cscx'
 		doc = Culter::CSCX::CscxDocument.new(data)
@@ -35,7 +38,7 @@ else
 		else
 			raise ArgumentError.new("Missing language")
 		end
-		if verbose then puts "#{culter.rulesCount} rules found." end
+		if $CULTER_VERBOSE > 0 then puts "#{culter.rulesCount} rules found." end
 	elsif data =~ /\.csex$/
 		require 'culter/csex'
 		doc = Culter::CSEX::CsexDocument.new(data)
@@ -48,14 +51,14 @@ else
 		else
 			raise ArgumentError.new("Missing language")
 		end
-		if verbose then puts "#{culter.rulesCount} rules found."; puts "#{culter.protectedPartsCount} protected parts found." end
+		if $CULTER_VERBOSE > 0 then puts "#{culter.rulesCount} rules found."; puts "#{culter.protectedPartsCount} protected parts found." end
 	else
 		raise ArgumentError.new("#{data} is not a valid segmentation format")	
 	end
 end
 
 while line = gets
-	if verbose then
+	if $CULTER_VERBOSE > 0 then
 		# Help for debug: displays details
 		i = 0; start = Time.new
 		puts "\n\n"

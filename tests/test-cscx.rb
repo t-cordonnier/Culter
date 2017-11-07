@@ -3,6 +3,8 @@
 $LOAD_PATH << "#{File.dirname(__FILE__)}/../lib"                # For non-standard installation
 require 'culter/cscx'
 
+$CULTER_VERBOSE = 5
+
 culter = Culter::CSCX::CscxDocument.new "#{File.dirname(__FILE__)}/../samples/sample.cscx"
 
 require './test-function.rb'

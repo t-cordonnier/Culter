@@ -46,6 +46,7 @@
                     <item>Mmes?</item>
                     <item>Mlles?</item>
                     <item>n°s</item>
+                    <item-list-file name="sample-abbreviations.FR" format="txt:UTF-8" remove="\.$" comments="^[\#\;]" />
                 </loop>
             </apply-rule-template>        
             <!-- Shows sample of what template makes possible to simplify : -->

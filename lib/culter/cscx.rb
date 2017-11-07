@@ -89,6 +89,27 @@ module Culter::CSCX
 				@curTemplate = attributes['name']
 			elsif element == 'loop'
 				@loop = []
+			elsif element == 'item-list-file'
+                if attributes['format'] =~ /^te?xt(?:\:(.+))?$/	# one per line
+					if $1 != nil then attributes['format'] = "r:#{$1}" else attributes['format'] = 'r' end
+					if not File.exist? attributes['name']
+						attributes['name'] = File.dirname(@file) + '/' + attributes['name']
+					end
+					if $CULTER_VERBOSE > 1 then puts "Reading #{attributes['name']}" end
+					File.open(attributes['name'], attributes['format']) do |f|
+						i = 0
+						while line = f.gets
+							line.gsub! /\r?\n$/, ''
+							if attributes['remove'] then line.gsub!(Regexp.new(attributes['remove']),'') end
+							if attributes['comments'] and line =~ Regexp.new(attributes['comments']) then next end
+							if line.length > 0 then
+								@loop << line
+								i = i + 1
+							end
+						end	
+						if $CULTER_VERBOSE > 2 then puts "#{attributes['name']}: #{i} items added" end
+					end
+				end
 			end
 			@where = element
 		end
@@ -106,7 +127,8 @@ module Culter::CSCX
 				@curLangRule << ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@loop)
 			end
 		end
-		  
+		
+		def file=(st) @file = st end		  
 	end
 	
 	##
@@ -117,6 +139,7 @@ module Culter::CSCX
 			callback = CscxCallbacks.new
 			if src.is_a? String then
 				if (src =~ /\.(xml|cscx)$/) then 
+					callback.file = src
 					File.open(src, 'r:UTF-8') { |source| REXML::Document.parse_stream(source, callback) } 
 				elsif src =~ /<\w/
 					REXML::Document.parse_stream(src, callback)
@@ -142,7 +165,11 @@ module Culter::CSCX
 				if langMap.matches(lang) then
 					@langRules[langMap.rulename].each do |r| 
 						if r.is_a? Culter::SRX::Rule then rules << r
-						elsif r.is_a? ApplyRuleTemplate then rules << r.to_rules
+						elsif r.is_a? ApplyRuleTemplate then
+							rules << r.to_rules
+							if $CULTER_VERBOSE > 3 then
+								puts "Built rule : #{r.to_rules.break} /#{r.to_rules.before}/ -> /#{r.to_rules.after}/"
+							end
 						end
 					end
 					if not(@cascade) then return Segmenter.new(rules,@formatHandle) end

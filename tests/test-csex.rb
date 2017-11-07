@@ -6,6 +6,8 @@ require 'culter/csex'
 
 require './test-function.rb'
 
+$CULTER_VERBOSE = 5
+
 #	1. Basic protected parts test (once without, once with)
 
 line = "Sample segment (Sample parenthesis. Contains two phrases) ended. Segment two."
