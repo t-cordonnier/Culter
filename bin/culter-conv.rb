@@ -4,7 +4,7 @@ $LOAD_PATH << "#{File.dirname(__FILE__)}/../lib"                # For non-standa
 
 $CULTER_VERBOSE = 0
 
-if ARGV.empty?
+if ARGV.count < 2
 	puts <<"EOF"
 Syntax : culter-conv.rb [options] <original file> <dest file>
 
@@ -17,19 +17,8 @@ EOF
 	exit
 end
 
-src = ARGV.shift
-if src =~ /\.srx$/
-	require 'culter/srx'
-	doc = Culter::SRX::SrxDocument.new(src)
-elsif src =~ /\.cscx$/
-	require 'culter/cscx'
-	doc = Culter::CSCX::CscxDocument.new(src)
-elsif src =~ /\.csex$/
-	require 'culter/csex'
-	doc = Culter::CSEX::CsexDocument.new(src)
-else
-	puts "Unknown format"
-end
+require 'culter/args'
+doc = Culter::Args::load_file(ARGV.shift)
 
 tra = ARGV.shift
 if tra =~ /srx$/
