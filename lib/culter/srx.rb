@@ -3,7 +3,7 @@
 require 'rexml/document'
 require "rexml/streamlistener"
 
-module Culter end
+require 'culter/_xml'
 
 ##
 # Implement a segmenter with a SRX (1.0 or 2.0) document
@@ -34,7 +34,15 @@ module Culter::SRX
 		def apply!(st)
 			if self.break then subst = "\\1\uE001\\2" else subst = "\\1\uE000\\2" end
 			st.gsub!(@regex, subst)
-		end        
+		end
+		
+		def to_srx(dest)
+			dest.write "\t\t\t\t<rule "
+			if @break then dest.puts 'break="yes">' else dest.puts 'break="no">' end
+			if before != nil then dest.puts "\t\t\t\t\t<beforebreak>#{before.gsub(/\(\?\:/,'(')}</beforebreak>" end
+			if after != nil then dest.puts "\t\t\t\t\t<afterbreak>#{after.gsub(/\(\?\:/,'(')}</afterbreak>" end
+			dest.puts "\t\t\t\t</rule>"			
+		end		
 	end
 
 	class LangMap 	# :nodoc: all
@@ -49,6 +57,8 @@ module Culter::SRX
 		def matches(lang) 
 			return (lang =~ @pattern) != nil
 		end
+		
+		def to_srx() "<languagemap languagepattern='#{@pattern}' languagerulename='#{rulename}' />" end
 	end
 	
 	class SrxCallbacks 	# :nodoc: all
@@ -102,19 +112,11 @@ module Culter::SRX
 	##
 	# Loads a SRX document and can apply the rules
 	class SrxDocument
+		include Culter::XML
 	
 		def initialize(src)
 			callback = SrxCallbacks.new
-			if src.is_a? String then
-				if (src =~ /\.(xml|srx)$/) then 
-					File.open(src, 'r:UTF-8') { |source| REXML::Document.parse_stream(source, callback) } 
-				elsif src =~ /<\w/
-					REXML::Document.parse_stream(src, callback)
-					puts "Callback : #{callback.cascade}"
-				end
-			elsif src.is_a? IO
-				REXML::Document.parse_stream(src, callback)
-			end
+			load(src,'srx',callback)
 			
 			@cascade = callback.cascade
 			@mapRules = callback.mapRules
@@ -144,7 +146,7 @@ module Culter::SRX
 	
 	class Segmenter
 	
-		attr_reader :tagStart, :tagEnd, :tagIsolated
+		attr_reader :tagStart, :tagEnd, :tagIsolated, :rules
 	
 		def initialize(rules,formatHandle)
 			@rules = rules

@@ -3,6 +3,7 @@
 require 'rexml/document'
 require "rexml/streamlistener"
 
+require 'culter/_xml'
 require 'culter/srx'
 
 ##
@@ -13,25 +14,39 @@ require 'culter/srx'
 module Culter::CSCX
 
 	class RuleTemplate
-		attr_accessor :params, :rewriteRule
+		attr_accessor :params, :rewriteRule, :name
 		
-		def initialize()
+		def initialize(name)
+			@name = name
 			@params = {}
 		end
 	end
 
 	class ApplyRuleTemplate
 		def initialize(templateRef, loop)
-			@ruleRef = templateRef.rewriteRule
+			@ruleRef = templateRef
 			@items = loop
 		end
 		
 		def to_rules
-			rule = Culter::SRX::Rule.new(@ruleRef.break)
-			rule.before = @ruleRef.before.gsub(/\%\{(\w+)\}/, @items.join("|"))
-			rule.after = @ruleRef.after.gsub(/\%\{(\w+)\}/, @items.join("|"))            
-			return rule
+			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break)
+			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/, @items.join("|"))
+			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/, @items.join("|"))            
+			return rule		
 		end
+		
+		def to_srx(dest)
+			to_rules().to_srx(dest)
+		end
+		
+		def to_cscx(dest)
+			dest.puts "\t\t\t<apply-rule-template name='#{@ruleRef.name}'>"
+			dest.puts "\t\t\t\t<loop param='#{ruleRef.params.keys[0]}'>"
+			@items.each { |item| dest.puts "\t\t\t\t<item>#{@item}</item>" }
+			dest.puts "\t\t\t\t</loop>"
+			dest.puts "\t\t\t</apply-rule-template>"
+		end		
+		
 	end
     
 	class CscxCallbacks 	# :nodoc: all
@@ -82,7 +97,7 @@ module Culter::CSCX
 				newRule! Culter::SRX::Rule.new(false)
 			elsif element == 'rule-template'
 				@curTemplate = attributes['name']
-				@ruleTemplates[attributes['name']] = RuleTemplate.new
+				@ruleTemplates[attributes['name']] = RuleTemplate.new(attributes['name'])
 			elsif element == 'rule-template-param'
 				@ruleTemplates[@curTemplate].params[attributes['name']] = attributes
 			elsif element == 'apply-rule-template'
@@ -134,19 +149,13 @@ module Culter::CSCX
 	##
 	# Loads a SRX document and can apply the rules
 	class CscxDocument
+		include Culter::XML
+	
+		attr_reader :ruleTemplates
 	
 		def initialize(src)
 			callback = CscxCallbacks.new
-			if src.is_a? String then
-				if (src =~ /\.(xml|cscx)$/) then 
-					callback.file = src
-					File.open(src, 'r:UTF-8') { |source| REXML::Document.parse_stream(source, callback) } 
-				elsif src =~ /<\w/
-					REXML::Document.parse_stream(src, callback)
-				end
-			elsif src.is_a? IO
-				REXML::Document.parse_stream(src, callback)
-			end
+			load(src,'cscx',callback)
 			
 			@cascade = callback.cascade
 			@mapRules = callback.mapRules

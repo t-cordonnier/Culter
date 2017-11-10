@@ -90,15 +90,7 @@ module Culter::CSEX
 	
 		def initialize(src)
 			callback = CsexCallbacks.new
-			if src.is_a? String then
-				if (src =~ /\.(xml|csex)$/) then 
-					File.open(src, 'r:UTF-8') { |source| REXML::Document.parse_stream(source, callback) } 
-				elsif src =~ /<\w/
-					REXML::Document.parse_stream(src, callback)
-				end
-			elsif src.is_a? IO
-				REXML::Document.parse_stream(src, callback)
-			end
+			load(src,'csex',callback)
 			
 			@cascade = callback.cascade
 			@mapRules = callback.mapRules
