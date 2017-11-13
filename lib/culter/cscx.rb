@@ -101,7 +101,7 @@ module Culter::CSC::XML
 	##
 	# Loads a SRX document and can apply the rules
 	class CscxDocument < Culter::CSC::CscDocument
-		include Culter::XML
+		include Culter::XML::Load
 	
 		attr_reader :ruleTemplates
 	

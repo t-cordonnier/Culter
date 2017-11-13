@@ -3,7 +3,9 @@
 
 module Culter end			# only to avoid errors
 
-module Culter::XML
+module Culter::XML end
+
+module Culter::XML::Load
 
 	def load(src, extension, callback)
 		if src.is_a? String then
@@ -17,7 +19,11 @@ module Culter::XML
 			REXML::Document.parse_stream(src, callback)
 		end
 	end
+
+end
 	
+module Culter::XML::Convert
+
 	##
 	# Display the result in SRX format
 	# Param dest (IO): if present, write to the IO. Else, return a string

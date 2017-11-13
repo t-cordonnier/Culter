@@ -112,7 +112,7 @@ module Culter::SRX
 	##
 	# Loads a SRX document and can apply the rules
 	class SrxDocument
-		include Culter::XML
+		include Culter::XML::Load
 	
 		def initialize(src)
 			callback = SrxCallbacks.new

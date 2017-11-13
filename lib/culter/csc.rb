@@ -90,6 +90,8 @@ module Culter::CSC
 			end
 			return Culter::SRX::Segmenter.new(rules,@formatHandle)
 		end
+		
+		include Culter::XML::Convert
 	end
 	
 end
