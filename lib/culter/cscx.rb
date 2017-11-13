@@ -4,51 +4,15 @@ require 'rexml/document'
 require "rexml/streamlistener"
 
 require 'culter/_xml'
-require 'culter/srx'
+require 'culter/csc'
 
 ##
 # Implement a segmenter with Culter Segmentation Compatible as XML
-# XML-based format with only SRX-compatible markups: this is only a more readable format than SRX, 
-# with capacity to create templates
+# XML reader for CSC
+# Format with only SRX-compatible markups: this is only a more readable format than SRX, 
 # 
-module Culter::CSCX
+module Culter::CSC::XML
 
-	class RuleTemplate
-		attr_accessor :params, :rewriteRule, :name
-		
-		def initialize(name)
-			@name = name
-			@params = {}
-		end
-	end
-
-	class ApplyRuleTemplate
-		def initialize(templateRef, loop)
-			@ruleRef = templateRef
-			@items = loop
-		end
-		
-		def to_rules
-			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break)
-			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/, @items.join("|"))
-			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/, @items.join("|"))            
-			return rule		
-		end
-		
-		def to_srx(dest)
-			to_rules().to_srx(dest)
-		end
-		
-		def to_cscx(dest)
-			dest.puts "\t\t\t<apply-rule-template name='#{@ruleRef.name}'>"
-			dest.puts "\t\t\t\t<loop param='#{ruleRef.params.keys[0]}'>"
-			@items.each { |item| dest.puts "\t\t\t\t<item>#{@item}</item>" }
-			dest.puts "\t\t\t\t</loop>"
-			dest.puts "\t\t\t</apply-rule-template>"
-		end		
-		
-	end
-    
 	class CscxCallbacks 	# :nodoc: all
 		include REXML::StreamListener
 		
@@ -97,7 +61,7 @@ module Culter::CSCX
 				newRule! Culter::SRX::Rule.new(false)
 			elsif element == 'rule-template'
 				@curTemplate = attributes['name']
-				@ruleTemplates[attributes['name']] = RuleTemplate.new(attributes['name'])
+				@ruleTemplates[attributes['name']] = Culter::CSC::RuleTemplate.new(attributes['name'])
 			elsif element == 'rule-template-param'
 				@ruleTemplates[@curTemplate].params[attributes['name']] = attributes
 			elsif element == 'apply-rule-template'
@@ -111,19 +75,7 @@ module Culter::CSCX
 						attributes['name'] = File.dirname(@file) + '/' + attributes['name']
 					end
 					if $CULTER_VERBOSE > 1 then puts "Reading #{attributes['name']}" end
-					File.open(attributes['name'], attributes['format']) do |f|
-						i = 0
-						while line = f.gets
-							line.gsub! /\r?\n$/, ''
-							if attributes['remove'] then line.gsub!(Regexp.new(attributes['remove']),'') end
-							if attributes['comments'] and line =~ Regexp.new(attributes['comments']) then next end
-							if line.length > 0 then
-								@loop << line
-								i = i + 1
-							end
-						end	
-						if $CULTER_VERBOSE > 2 then puts "#{attributes['name']}: #{i} items added" end
-					end
+					Culter::CSC::readTextFile(attributes['name'], attributes['format'], attributes['remove'], Regexp.new(attributes['comments'])) { |line| @loop << line.gsub(/\./, "\\.") }
 				end
 			end
 			@where = element
@@ -139,7 +91,7 @@ module Culter::CSCX
 		def tag_end(element)			
 			@where = ''
 			if element == 'apply-rule-template'
-				@curLangRule << ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@loop)
+				@curLangRule << Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@loop)
 			end
 		end
 		
@@ -148,7 +100,7 @@ module Culter::CSCX
 	
 	##
 	# Loads a SRX document and can apply the rules
-	class CscxDocument
+	class CscxDocument < Culter::CSC::CscDocument
 		include Culter::XML
 	
 		attr_reader :ruleTemplates
@@ -174,7 +126,7 @@ module Culter::CSCX
 				if langMap.matches(lang) then
 					@langRules[langMap.rulename].each do |r| 
 						if r.is_a? Culter::SRX::Rule then rules << r
-						elsif r.is_a? ApplyRuleTemplate then
+						elsif r.is_a? Culter::CSC::ApplyRuleTemplate then
 							rules << r.to_rules
 							if $CULTER_VERBOSE > 3 then
 								puts "Built rule : #{r.to_rules.break} /#{r.to_rules.before}/ -> /#{r.to_rules.after}/"

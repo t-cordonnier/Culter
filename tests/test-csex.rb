@@ -12,7 +12,7 @@ $CULTER_VERBOSE = 5
 
 line = "Sample segment (Sample parenthesis. Contains two phrases) ended. Segment two."
 
-culter = Culter::CSCX::CscxDocument.new "#{File.dirname(__FILE__)}/../samples/sample.cscx"
+culter = Culter::CSC::XML::CscxDocument.new "#{File.dirname(__FILE__)}/../samples/sample.cscx"
 test "no protected parts", culter.segmenter('en').cut(line), [
 	"Sample segment (Sample parenthesis.",			# no protection		# Exception for Mrs.
 	" Contains two phrases) ended.",

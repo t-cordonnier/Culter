@@ -65,7 +65,7 @@ module Culter::CSEX
 	end
     
 	
-	class CsexCallbacks < Culter::CSCX::CscxCallbacks	# :nodoc: all
+	class CsexCallbacks < Culter::CSC::XML::CscxCallbacks	# :nodoc: all
 		attr_reader :protectedParts
 		
 		def initialize()
@@ -86,7 +86,7 @@ module Culter::CSEX
 	
 	##
 	# Loads a SRX document and can apply the rules
-	class CsexDocument < Culter::CSCX::CscxDocument
+	class CsexDocument < Culter::CSC::XML::CscxDocument
 	
 		def initialize(src)
 			callback = CsexCallbacks.new
@@ -109,7 +109,7 @@ module Culter::CSEX
 				if langMap.matches(lang) then
 					@langRules[langMap.rulename].each do |r| 
 						if r.is_a? Culter::SRX::Rule then rules << r
-						elsif r.is_a? Culter::CSCX::ApplyRuleTemplate then rules << r.to_rules
+						elsif r.is_a? Culter::CSC::ApplyRuleTemplate then rules << r.to_rules
 						end
                     end
 					@protectedParts[langMap.rulename].each { |r| protectedParts << r }
