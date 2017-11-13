@@ -1,11 +1,11 @@
 #! /usr/bin/env ruby 
 
 $LOAD_PATH << "#{File.dirname(__FILE__)}/../lib"                # For non-standard installation
-require 'culter/cscx'
+require 'culter/cscy'
 
 $CULTER_VERBOSE = 5
 
-culter = Culter::CSC::XML::CscxDocument.new "#{File.dirname(__FILE__)}/../samples/sample.cscx"
+culter = Culter::CSC::YML::CscyDocument.new "#{File.dirname(__FILE__)}/../samples/sample.cscy"
 
 require './test-function.rb'
 
@@ -38,7 +38,6 @@ test "en", culter.segmenter('en').cut(line), [
 ]
 
 #	4. Test french
-
 
 line = "Ceci est un test. Il est noté coeff. 2. Test réussi."
 test "fr", culter.segmenter('fr').cut(line), [

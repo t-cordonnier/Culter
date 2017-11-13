@@ -25,6 +25,9 @@ module Culter::Args
     elsif data =~ /\.cscx$/i
       require 'culter/cscx'
       return Culter::CSC::XML::CscxDocument.new(data)
+    elsif data =~ /\.cscy$/
+      require 'culter/cscy'
+      return Culter::CSC::YML::CscyDocument.new(data)		
     elsif data =~ /\.csex$/i
       require 'culter/csex'
       doc = Culter::CSEX::CsexDocument.new(data)
