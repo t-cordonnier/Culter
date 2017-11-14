@@ -19,7 +19,7 @@ test "no protected parts", culter.segmenter('en').cut(line), [
 	" Segment two."
 ]
 
-culter = Culter::CSEX::CsexDocument.new "#{File.dirname(__FILE__)}/../samples/sample.csex"
+culter = Culter::CSE::XML::CsexDocument.new "#{File.dirname(__FILE__)}/../samples/sample.csex"
 test "with protected parts", culter.segmenter('en').cut(line), [
 	"Sample segment (Sample parenthesis. Contains two phrases) ended.",		# protection works!
 	" Segment two."

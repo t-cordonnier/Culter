@@ -30,7 +30,7 @@ module Culter::Args
       return Culter::CSC::YML::CscyDocument.new(data)		
     elsif data =~ /\.csex$/i
       require 'culter/csex'
-      doc = Culter::CSEX::CsexDocument.new(data)
+      return Culter::CSE::XML::CsexDocument.new(data)
     else
       raise ArgumentError.new("#{data} is not a valid segmentation format")	
     end
