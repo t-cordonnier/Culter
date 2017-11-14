@@ -42,11 +42,17 @@ module Culter::SRX
 			if before != nil then dest.puts "\t\t\t\t\t<beforebreak>#{before.gsub(/\(\?\:/,'(')}</beforebreak>" end
 			if after != nil then dest.puts "\t\t\t\t\t<afterbreak>#{after.gsub(/\(\?\:/,'(')}</afterbreak>" end
 			dest.puts "\t\t\t\t</rule>"			
-		end		
+		end
+		
+		def to_yaml_struct()  
+			res = { 'before' => @before, 'after' => @after }
+			if @break then res['type'] = 'break-rule' else res['type'] = 'exception-rule' end
+			return res
+		end
 	end
 
 	class LangMap 	# :nodoc: all
-		attr_reader :rulename
+		attr_reader :rulename, :pattern
 		
 		def initialize(pattern, rulename)
 			if pattern.is_a? String then pattern = %r(#{pattern}) end
@@ -142,6 +148,14 @@ module Culter::SRX
 			return Segmenter.new(rules,@formatHandle)
 		end
 		
+		def to_yaml_struct(mapruleName = nil)  
+			res = { 'rules' => {}, 'rules-mapping' => { 'maps' => [] } }
+			res['rules-mapping']['cascade'] = @cascade
+			if mapruleName != nil then curMapRule = @mapRules[mapruleName] else curMapRule = @defaultMapRule end
+			curMapRule.each do |i| res['rules-mapping']['maps'] << { i.pattern.to_s => i.rulename } end
+			@langRules.each do |k,v| res['rules'][k] = v.collect { |rule| rule.to_yaml_struct() } end
+			return res
+		end
 	end
 	
 	class Segmenter

@@ -59,4 +59,13 @@ elsif tra =~ /cscx$/
 	else
 		File.open(tra, 'w:UTF-8') { |f| f.puts "<?xml version='1.0' encoding='UTF-8'?>"; doc.to_cscx(f, langs, mapruleName) }
 	end
+elsif tra =~ /cscy$/
+	require 'yaml'
+	
+	if tra == 'cscy' then 
+		$stdout.puts YAML.dump(doc.to_yaml_struct())
+	else
+		File.open(tra, 'w:UTF-8') { |f| f.puts YAML.dump(doc.to_yaml_struct()) }
+	end
+
 end	

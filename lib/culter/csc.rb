@@ -19,6 +19,10 @@ module Culter::CSC
 			@name = name
 			@params = {}
 		end
+		
+		def to_yaml_struct()  
+			return { 'params' => @params, 'rewrite' => @rewriteRule.to_yaml_struct() }			
+		end		
 	end
 
 	class ApplyRuleTemplate
@@ -46,6 +50,11 @@ module Culter::CSC
 			dest.puts "\t\t\t</apply-rule-template>"
 		end		
 		
+		def to_yaml_struct()  
+			res = { 'type' => 'apply-rule-template', 'template-name' => @ruleRef.name }
+			res['params'] = @ruleRef.params.collect do |param0| { 'name' => param0, 'loop' => @items } end 			
+			return res
+		end
 	end
 	
 	def self.readTextFile(filename, format, remove, comments)
@@ -92,6 +101,17 @@ module Culter::CSC
 		end
 		
 		include Culter::XML::Convert
+		
+		def to_yaml_struct(mapruleName = nil)  
+			res = { 'rules' => {}, 'rules-mapping' => { 'maps' => [] } }
+			res['rules-mapping']['cascade'] = @cascade
+			if mapruleName != nil then curMapRule = @mapRules[mapruleName] else curMapRule = @defaultMapRule end
+			curMapRule.each do |i| res['rules-mapping']['maps'] << { i.pattern.to_s => i.rulename } end
+			@langRules.each do |k,v| res['rules'][k] = v.collect { |rule| rule.to_yaml_struct() } end
+			res['rule-templates'] = {}
+			ruleTemplates.each do |name, item| res['rule-templates'][name] = item.to_yaml_struct() end
+			return res
+		end		
 	end
 	
 end
