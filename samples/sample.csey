@@ -1,0 +1,83 @@
+rules-mapping:
+     cascade: true
+     maps:
+         - '[dD][eE](\W.*)?': Deutsch
+         - '[eE][nN](\W.*)?': English
+         - '[fF][rR](\W.*)?': Français
+         - '.*': Common
+         
+rule-templates:
+    abbreviations:
+        params:
+            - words
+        rewrite:
+            type: exception-rule
+            before: \b(%{words})\.
+            after: \s
+    ordinal-followers:
+        params:
+            - words
+        rewrite:
+            type: exception-rule
+            before: '[0-9]\.'
+            after: '\s(%{words})'
+
+rules:
+    Common:
+       - type: protected-part
+         begin: '\('
+         end: '\)'
+         recursive: yes
+       - type: protected-part
+         begin: '\['
+         end: '\]'
+         recursive: yes
+       - type: protected-part
+         begin: '\{'
+         end: '\}'
+         recursive: no
+       - type: break-rule
+         before: '[\.\?\!]'
+         after: \s\P{Lower}
+
+    Français:
+       - type: apply-template
+         template-name: abbreviations
+         params:
+            - name: words
+              loop:
+                 - Mr
+                 - Mmes?
+                 - Mlles?
+                 - n°s 
+       # Sample equivalent to previous, but without template
+       - type: exception-rule
+         before: \betc\.
+         after: \s
+
+    English:
+       - type: apply-template
+         template-name: abbreviations
+         params:
+            - name: words
+              loop:
+                 - Mr
+                 - Dr
+                 - Mrs
+
+    Deutsch:
+       - type: apply-template
+         template-name: abbreviations
+         params:
+            - name: words
+              loop:
+                 - GMBH
+                 - HBF
+       - type: apply-template
+         template-name: ordinal-followers
+         params:
+            - name: words
+              loop:
+                 - jahrhundert(s)?
+                 - tag(es|s|ung)?
+

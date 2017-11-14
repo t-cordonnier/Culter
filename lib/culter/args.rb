@@ -31,6 +31,9 @@ module Culter::Args
     elsif data =~ /\.csex$/i
       require 'culter/csex'
       return Culter::CSE::XML::CsexDocument.new(data)
+    elsif data =~ /\.csey$/i
+      require 'culter/cscy'
+      return Culter::CSE::YML::CseyDocument.new(data)
     else
       raise ArgumentError.new("#{data} is not a valid segmentation format")	
     end
