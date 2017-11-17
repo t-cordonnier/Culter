@@ -30,6 +30,50 @@ module Culter::CSE
 			st.gsub! (/\uE002#{@pos};(\d+)\uE002/) { mem[$1.to_i] }
 		end
 	end
+	
+	class SuperRule < Culter::SRX::Rule		# :nodoc: all
+		attr_accessor :beforeKeep, :afterKeep
+		
+		def initialize(isBreak)
+			@break = isBreak
+			@beforeKeep = nil; @afterKeep = nil
+		end
+        
+		# setters for rules: special case if keep is something
+		def before=(st) 
+			if beforeKeep == nil then super(st) else @before = st end			
+		end
+		def after=(st) 
+			if afterKeep == nil then super(st) else @after = st end
+		end
+        
+		def protect_item(st,num)
+			i = 0; 1 while st.gsub! (/\(([^<].+|\g<0>)\)/) { |item| i = i + 1; "(<#{i}>#{$1})" }
+			st.gsub! /\(<#{num}>/, '('	# only for this instance
+			st.gsub! /\(<\d+>/, '('	# for all others
+			return "(?:#{st})"
+		end
+		
+		def prepare!(segmenter,formatHandle)
+			beforeTags = []; afterTags = []
+			if formatHandle['start'] then beforeTags << segmenter.tagStart else afterTags << segmenter.tagStart end 
+			if formatHandle['end'] then beforeTags << segmenter.tagEnd else afterTags << segmenter.tagEnd end 
+			if formatHandle['isolated'] then beforeTags << segmenter.tagIsolated else afterTags << segmenter.tagIsolated end 
+			if beforeKeep == nil then 
+				beforeSt = "(#{self.before})"
+			elsif beforeKeep =~ /^\$(\d+)/ 
+				beforeSt = self.before; beforeSt = protect_item(beforeSt, $1)
+			end
+			if afterKeep == nil then 
+				afterSt = "(#{self.after})"
+			elsif afterKeep =~ /^\$(\d+)/ 
+				afterSt = self.after; afterSt = protect_item(afterSt, $1)
+			end
+			if beforeTags.count > 0 then beforeSt = "#{beforeSt}(?:" + beforeTags.join('|') + ")*" end
+			if afterTags.count > 0 then afterSt = "(?:" + afterTags.join('|') + ")*#{afterSt}"  end
+			@regex = %r{#{beforeSt}#{afterSt}}
+		end
+	end	
     
 	class SuperSegmenter < Culter::SRX::Segmenter
         

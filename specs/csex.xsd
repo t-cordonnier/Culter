@@ -13,6 +13,18 @@
     
 	<xs:import schemaLocation="cscx.xsd"/>
     
+    <xs:element name="afterbreak">
+         <xs:complexType mixed="true">
+			<xs:attribute name="keep" type="xs:string" />	<!-- enables to remove part of the text before cutting -->
+		</xs:complexType>
+    </xs:element>
+    <xs:element name="beforebreak">
+         <xs:complexType mixed="true">
+			<xs:attribute name="keep" type="xs:string" />	<!-- enables to remove part of the text before cutting -->
+		</xs:complexType>
+    </xs:element>
+	
+	
     <xs:element name="protected-part">
         <xs:complexType>
             <xs:attribute name="begin" type="xs:string" use="required" />

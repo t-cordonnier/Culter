@@ -16,7 +16,7 @@
 			<rewrite>
 				<rule break="no">
 					<beforebreak>\b(%{words})\.</beforebreak>   <!-- avoids repeating dot at the end -->
-					<afterbreak keep="false">\s</afterbreak>
+					<afterbreak>\s</afterbreak>
 				</rule>
 			</rewrite>
 		</rule-template>
@@ -38,10 +38,10 @@
             <protected-part begin="\[" end="\]" recursive="yes" />  <!-- recursive : [...[...]...] will be considered entirely -->
             <protected-part begin="\{" end="\}" recursive="no" />  <!-- not recursive (default) : [...[...]...] will be considered until first ] -->
             <!-- usual rule -->
-            <rule break="yes">
+            <break-rule>
                 <beforebreak>[\.\?\!]</beforebreak>
-                <afterbreak>\s\P{Lower}</afterbreak>
-            </rule>            
+                <afterbreak keep="$1">\s(\p{Lu})</afterbreak>
+            </break-rule>            
 		</languagerule>
 		<languagerule languagerulename="Français">
             <!-- Apply a template: this will generate one single rule with all abbreviations -->

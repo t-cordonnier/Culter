@@ -22,7 +22,7 @@ test "no protected parts", culter.segmenter('en').cut(line), [
 culter = Culter::CSE::XML::CsexDocument.new "#{File.dirname(__FILE__)}/../samples/sample.csex"
 test "with protected parts", culter.segmenter('en').cut(line), [
 	"Sample segment (Sample parenthesis. Contains two phrases) ended.",		# protection works!
-	" Segment two."
+	"Segment two."			# keep="" : remove space in the beginning
 ]
 
 #	2. Recursivity test
@@ -31,13 +31,13 @@ test "with protected parts", culter.segmenter('en').cut(line), [
 line = "Sample segment [Sample parenthesis. Contains two phrases [and also parenthesis. with phrases] and many more. And more] ended. Segment two."
 test "recursive", culter.segmenter('en').cut(line), [
 	"Sample segment [Sample parenthesis. Contains two phrases [and also parenthesis. with phrases] and many more. And more] ended.",		# recursion works!
-	" Segment two."
+	"Segment two."			# keep="" : remove space in the beginning
 ]
 
 # 2.2	use { and }, which are not recursive in sample.csex
 line = "Sample segment {Sample parenthesis. Contains two phrases {and also parenthesis. with phrases} and many more. And more} ended. Segment two."
 test "non-recursive", culter.segmenter('en').cut(line), [
 	"Sample segment {Sample parenthesis. Contains two phrases {and also parenthesis. with phrases} and many more.",
-	" And more} ended.",		# no recursion works!
-	" Segment two."
+	"And more} ended.",		# no recursion works!
+	"Segment two."			# keep="" : remove space in the beginning
 ]
