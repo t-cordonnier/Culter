@@ -7,6 +7,7 @@
         <languagemap languagepattern="[dD][eE](\W.*)?" languagerulename="Deutsch"/>
         <languagemap languagepattern="[eE][nN](\W.*)?" languagerulename="English"/>
         <languagemap languagepattern="[fF][rR](\W.*)?" languagerulename="Français"/>
+        <languagemap languagepattern="[jJ][aA](\W.*)?" languagerulename="Nihongo"/>
         <languagemap languagepattern=".*" languagerulename="Common"/>
     </rules-mapping>
 	<!-- Rule templates: enable to repeat a standard schema -->
@@ -43,7 +44,7 @@
                 <afterbreak keep="$1">\s(\p{Lu})</afterbreak>
             </break-rule>            
 		</languagerule>
-		<languagerule languagerulename="Français">
+		<languagerule languagerulename="Français" join=" ">
             <!-- Apply a template: this will generate one single rule with all abbreviations -->
 			<apply-rule-template name="abbreviations">
                 <loop param="words">
@@ -62,7 +63,7 @@
 				<typed-rule><param name="word">ODB</param></typed-rule>
 			-->			
         </languagerule>
-		<languagerule languagerulename="English">
+		<languagerule languagerulename="English" join=" ">
 			<apply-rule-template name="abbreviations">
                 <loop param="words">
                     <item>Dr</item>
@@ -71,7 +72,7 @@
                 </loop>
 			</apply-rule-template>
         </languagerule>
-		<languagerule languagerulename="Deutsch">
+		<languagerule languagerulename="Deutsch" join=" ">
 			<apply-rule-template name="abbreviations">
                 <loop param="words">
                     <item>GMBH</item>
@@ -85,6 +86,7 @@
                 </loop>
 			</apply-rule-template>
         </languagerule>
+		<languagerule languagerulename="Nihongo" join="" />	<!-- do not insert spaces between strings -->
 	</languagerules>
     
 </seg-rules>

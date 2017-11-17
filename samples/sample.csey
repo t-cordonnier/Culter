@@ -4,6 +4,7 @@ rules-mapping:
          - '[dD][eE](\W.*)?': Deutsch
          - '[eE][nN](\W.*)?': English
          - '[fF][rR](\W.*)?': Français
+         - '[jJ][aA](\W.*)?': Nihongo
          - '.*': Common
          
 rule-templates:
@@ -41,6 +42,8 @@ rules:
          after: \s\P{Lower}
 
     Français:
+       - type: join
+         value: ' '
        - type: apply-template
          template-name: abbreviations
          params:
@@ -56,6 +59,8 @@ rules:
          after: \s
 
     English:
+       - type: join
+         value: ' '
        - type: apply-template
          template-name: abbreviations
          params:
@@ -66,6 +71,8 @@ rules:
                  - Mrs
 
     Deutsch:
+       - type: join
+         value: ' '
        - type: apply-template
          template-name: abbreviations
          params:
@@ -81,3 +88,6 @@ rules:
                  - jahrhundert(s)?
                  - tag(es|s|ung)?
 
+    Nihongo:
+       - type: join
+         value: ''

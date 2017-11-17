@@ -9,6 +9,11 @@ culter = Culter::Args::get_doc
 if culter.respond_to? 'segmenter'
   culter = Culter::Args::get_segmenter(culter, ARGV.shift)
 end
+if $CULTER_VERBOSE > 0 then 
+  if culter.respond_to? 'protectedPartsCount' then puts "#{culter.protectedPartsCount} protected parts found." end
+  if culter.respond_to? 'joinString' then puts "Join between segments = '#{culter.joinString}'" end
+end
+
 
 while line = gets
 	if $CULTER_VERBOSE > 0 then

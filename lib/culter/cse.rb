@@ -77,9 +77,10 @@ module Culter::CSE
     
 	class SuperSegmenter < Culter::SRX::Segmenter
         
-		def initialize(rules,formatHandle, protectedParts)
+		def initialize(rules,formatHandle, protectedParts,join)
 			super(rules, formatHandle)
 			@protectedParts = protectedParts
+			@join = join
 		end
         
 		def cut(st)
@@ -101,7 +102,12 @@ module Culter::CSE
 		end	        
         
 		def protectedPartsCount() @protectedParts.count end
+		def joinString() @join end
 
+		def join(array)
+			if @join == nil then return array.join('') else return array.join(@join) end
+		end
+		
 	end
     
 
@@ -111,7 +117,7 @@ module Culter::CSE
 		# Produce an usable segmenter for the given language.
 		def segmenter(lang, maprulename = '')
 			if maprulename != '' then map = @maprules[maprulename] else map = @defaultMapRule end
-			rules = []; protectedParts = []
+			rules = []; protectedParts = []; curJoin = nil
 			map.each do |langMap|
 				if langMap.matches(lang) then
 					@langRules[langMap.rulename].each do |r| 
@@ -120,10 +126,11 @@ module Culter::CSE
 						end
                     end
 					@protectedParts[langMap.rulename].each { |r| protectedParts << r }
-					if not(@cascade) then return SuperSegmenter.new(rules,@formatHandle,protectedParts) end                    
+					if curJoin == nil then curJoin = @joins[langMap.rulename] end
+					if not(@cascade) then return SuperSegmenter.new(rules,@formatHandle,protectedParts,curJoin) end                    
 				end
 			end
-			return SuperSegmenter.new(rules,@formatHandle,protectedParts)
+			return SuperSegmenter.new(rules,@formatHandle,protectedParts,curJoin)
 		end
 			
 	end

@@ -14,11 +14,11 @@ module Culter::CSE::XML
 
 	
 	class CsexCallbacks < Culter::CSC::XML::CscxCallbacks	# :nodoc: all
-		attr_reader :protectedParts
+		attr_reader :protectedParts, :joins
 		
 		def initialize()
 			super
-            @protectedParts = {}
+            @protectedParts = {}; @joins = {}
 		end
 		
 		def tag_start(element, attributes)
@@ -27,6 +27,7 @@ module Culter::CSE::XML
 			elsif element == 'languagerule'
 				@curProtectedParts = []
 				@protectedParts[attributes['languagerulename']] = @curProtectedParts
+				@joins[attributes['languagerulename']] = attributes['join']
 			elsif element == 'rule' and attributes['break'] == 'yes'    # No SRX in this case
 				newRule! Culter::CSE::SuperRule.new(true)
 				return
@@ -56,6 +57,7 @@ module Culter::CSE::XML
 			@langRules = callback.langRules
 			@formatHandle = callback.formatHandle
 			@protectedParts = callback.protectedParts
+			@joins = callback.joins
 		end
 		
 		include Culter::CSE::SegmenterFactory

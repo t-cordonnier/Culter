@@ -16,12 +16,13 @@ module Culter::CSE::YML
 		include Culter::CSE::SegmenterFactory
 	
 		def initialize(src)
-			@protectedParts = {}; @counter = 0
+			@protectedParts = {}; @joins = {}; @counter = 0
 			super(src)
 			temp = @langRules; @langRules = {}
 			temp.each_pair do |name,rules| 
 				@langRules[name] = rules.select { |rule0| rule0.is_a? Culter::SRX::Rule or rule0.is_a? Culter::CSC::ApplyRuleTemplate } 
 				@protectedParts[name] = rules.select { |rule0| rule0.is_a? Culter::CSE::ProtectedPart }
+				rules.select { |rule0| rule0.is_a? Culter::CSE::YML::Join }.each { |join| @joins[name] = join.value }
 			end
 		end
 		
@@ -33,11 +34,18 @@ module Culter::CSE::YML
 			if yaml_hash['type'] =~ /^protected-part/
 				@counter = @counter + 1
 				return Culter::CSE::ProtectedPart.new(@counter - 1, yaml_hash['begin'], yaml_hash['end'], 'yes' == yaml_hash['recursive'])
+			elsif yaml_hash['type'] =~ /^join/
+				return Culter::CSE::YML::Join.new(yaml_hash['value'])
 			else
 				return super(yaml_hash)
 			end
 		end
 		
+	end
+	
+	class Join
+		def initialize(val) @value = val end
+		attr_reader :value
 	end
 
 end
