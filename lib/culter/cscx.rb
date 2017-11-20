@@ -40,8 +40,19 @@ module Culter::CSC::XML
 		end
 		
 		def tag_start(element, attributes)
-			if element == 'rules-mapping'
+			if element == 'seg-rules'
+				if attributes['extends'] != nil then 
+					if not File.exist? attributes['extends'] then
+						attributes['extends'] = File.dirname(@file) + '/' + attributes['extends']
+					end
+					@extended = CscxCallbacks.new
+					@extended.file = attributes['extends']
+					File.open(attributes['extends'], 'r:UTF-8') { |source| REXML::Document.parse_stream(source, @extended) } 
+					@ruleTemplates = @extended.ruleTemplates
+				end				
+			elsif element == 'rules-mapping'
 				if attributes['cascade'] == 'true' then @cascade = true end
+				@mappingExtMode =  attributes['extension-mode'] 
 			elsif element == 'formathandle'
 				@formatHandle[attributes['type']] = (attributes['include'] == 'yes')
 			elsif element == 'languagemap'
@@ -50,9 +61,13 @@ module Culter::CSC::XML
 			elsif element == 'maprule'
 				@curMapRule = []	# new empty array
 				@mapRules[attributes['maprulename']] = @curMapRule
+				@mappingExtMode =  attributes['extension-mode'] 
+				@curName = attributes['maprulename']
 			elsif element == 'languagerule'
 				@curLangRule = []	# new empty array
 				@langRules[attributes['languagerulename']] = @curLangRule
+				@mappingExtMode =  attributes['extension-mode'] 
+				@curName = attributes['languagerulename']
 			elsif element == 'rule'     # Use srx
 				newRule! Culter::SRX::Rule.new(attributes['break'] == 'yes')                
 			elsif element == 'break-rule'     # Use srx
@@ -92,6 +107,18 @@ module Culter::CSC::XML
 			@where = ''
 			if element == 'apply-rule-template'
 				@curLangRule << Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@loop)
+			elsif element == 'rules-mapping'
+				if @mappingExtMode == 'before' then @extended.defaultMapRule.each { |r| @defaultMapRule << r } end
+			elsif element == 'maprule'
+				if @mappingExtMode == 'before' then @extended.mapRules[@curName].each { |r| @curMapRule << r } end			
+			elsif element == 'languagerule'
+				if @mappingExtMode == 'before' then 
+					@extended.langRules[@curName].each { |r| @curLangRule << r } 
+				elsif @mappingExtMode == 'after' then 
+					dest = @extended.langRules[@curName].clone
+					@curLangRule.each { |r| dest << r }
+					@curLangRule = @langRules[@curName] = dest
+				end	
 			end
 		end
 		

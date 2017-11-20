@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Culter segmentation format, compatible (SRX-only), XML format
+-->
+<seg-rules xmlns="http://culter.silvestris-lab.org/compatible" extends="sample.cscx">
+    <rules-mapping cascade="true" extension-mode="before">
+        <languagemap languagepattern="[eE][oO](\W.*)?" languagerulename="Esperanto"/>
+		<!-- extension mode = before, so do not need to recopy other rules -->
+    </rules-mapping>
+    <!-- Language rules -->
+	<languagerules>
+		<languagerule languagerulename="Common" extension-mode="after">
+			<!-- this rule will be added to contents of "Common" rule from inherited file -->
+            <rule break="yes">
+                <beforebreak>:</beforebreak>
+                <afterbreak>\s\P{Lower}</afterbreak>
+            </rule>
+		</languagerule>
+		<!-- rule which did not exist in previous file -->
+		<languagerule languagerulename="Esperanto">            
+			<apply-rule-template name="abbreviations">
+                <loop param="words">
+                    <item>S-ro</item>
+                    <item>S-ino</item>
+                    <item>D-ro</item>
+                </loop>
+			</apply-rule-template>        
+        </languagerule>
+		<languagerule languagerulename="Français" extension-mode="before">
+            <!-- Define a new abbreviation list.  -->
+            <!-- This generates a new rule, but since extension-mode = before, it is simply added before existing ones. -->
+			<apply-rule-template name="abbreviations">
+                <loop param="words">
+                    <item>Cf</item>
+                    <item>[pP]</item>
+                </loop>
+			</apply-rule-template> 
+        </languagerule>
+	</languagerules>
+    
+</seg-rules>
+

@@ -141,6 +141,15 @@
 	      <xs:group ref="ruleSpec" />
             </xs:choice>	
             <xs:attribute name="languagerulename" type="xs:string" use="required" />
+            <xs:attribute name="extension-mode">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="before"/>	<!-- rules from new file come before inherited one -->
+                        <xs:enumeration value="after"/>		<!-- rules from new file come after inherited one -->
+                        <xs:enumeration value="replace"/>	<!-- ignore rules from inherited file (default) -->
+                    </xs:restriction>
+                </xs:simpleType>
+			</xs:attribute>
         </xs:complexType>
     </xs:element>
 	
@@ -153,6 +162,15 @@
                 <xs:element ref="languagemap" minOccurs="1" maxOccurs="unbounded"/>
             </xs:sequence>
             <xs:attribute name="cascade" type="xs:boolean" use="required" />
+            <xs:attribute name="extension-mode">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="before"/>	<!-- rules from new file come before inherited one -->
+                        <xs:enumeration value="after"/>		<!-- rules from new file come after inherited one -->
+                        <xs:enumeration value="replace"/>	<!-- ignore rules from inherited file (default) -->
+                    </xs:restriction>
+                </xs:simpleType>
+			</xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -167,6 +185,7 @@
                 <xs:element ref="rule-templates"/>
                 <xs:element ref="languagerules"/>
             </xs:all>
+			<xs:attribute name="extends" type="xs:string" /> <!-- file name -->
         </xs:complexType>
     </xs:element>
     
