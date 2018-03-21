@@ -39,6 +39,14 @@ module Culter::CSC::XML
 			end
 		end
 		
+		def newRuleName()
+			if @file != nil then
+				if @where == 'rewrite' then return "#{@file}:#{@curTemplate}" else return "#{@file}:#{@curName}/#{1 + @curLangRule.count}" end			
+			else
+				if @where == 'rewrite' then return @curTemplate else return "#{@curName}/#{1 + @curLangRule.count}" end
+			end
+		end		
+		
 		def tag_start(element, attributes)
 			if element == 'seg-rules'
 				if attributes['extends'] != nil then 
@@ -69,11 +77,11 @@ module Culter::CSC::XML
 				@mappingExtMode =  attributes['extension-mode'] 
 				@curName = attributes['languagerulename']
 			elsif element == 'rule'     # Use srx
-				newRule! Culter::SRX::Rule.new(attributes['break'] == 'yes')                
+				newRule! Culter::SRX::Rule.new(attributes['break'] == 'yes', newRuleName())                
 			elsif element == 'break-rule'     # Use srx
-				newRule! Culter::SRX::Rule.new(true)
+				newRule! Culter::SRX::Rule.new(true, newRuleName())
 			elsif element == 'exception-rule'     # Use srx
-				newRule! Culter::SRX::Rule.new(false)
+				newRule! Culter::SRX::Rule.new(false, newRuleName())
 			elsif element == 'rule-template'
 				@curTemplate = attributes['name']
 				@ruleTemplates[attributes['name']] = Culter::CSC::RuleTemplate.new(attributes['name'])

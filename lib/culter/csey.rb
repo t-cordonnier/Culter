@@ -30,14 +30,14 @@ module Culter::CSE::YML
 		
 	private
 		
-		def to_lang_rule(yaml_hash)
+		def to_lang_rule(name, yaml_hash)
 			if yaml_hash['type'] =~ /^protected-part/
 				@counter = @counter + 1
 				return Culter::CSE::ProtectedPart.new(@counter - 1, yaml_hash['begin'], yaml_hash['end'], 'yes' == yaml_hash['recursive'])
 			elsif yaml_hash['type'] =~ /^join/
 				return Culter::CSE::YML::Join.new(yaml_hash['value'])
 			else
-				return super(yaml_hash)
+				return super(name, yaml_hash)
 			end
 		end
 		

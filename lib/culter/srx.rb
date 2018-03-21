@@ -12,9 +12,11 @@ module Culter::SRX
 	class Rule		# :nodoc: all
 		attr_reader :break
 		attr_reader :before, :after
+		attr_reader :ruleName
 		
-		def initialize(isBreak)
+		def initialize(isBreak, name = nil)
 			@break = isBreak
+			if name == nil then @ruleName = "#{@before}!#{@after}" else @ruleName = name end
 		end
         
 		# setters for rules: even if the text uses parenthesis, avoid grouping
@@ -35,6 +37,10 @@ module Culter::SRX
 			if self.break then subst = "\\1\uE001\\2" else subst = "\\1\uE000\\2" end
 			st.gsub!(@regex, subst)
 		end
+		
+		def apply_debug!(st)			
+			st.gsub!(@regex, "\\1<#{@ruleName}:#{@break}>\\2")
+		end  		
 		
 		def to_srx(dest)
 			dest.write "\t\t\t\t<rule "
@@ -95,9 +101,11 @@ module Culter::SRX
 				@mapRules[attributes['maprulename']] = @curMapRule
 			elsif element == 'languagerule'
 				@curLangRule = []	# new empty array
+				@curLangRuleName = attributes['languagerulename']
 				@langRules[attributes['languagerulename']] = @curLangRule
 			elsif element == 'rule'
 				@curRule = Rule.new(attributes['break'] == 'yes')
+				@curRule = Rule.new(attributes['break'] == 'yes', "#{@curLangRuleName}/#{1 + @curLangRule.count}")
 				@curLangRule << @curRule
 			end
 			@where = element
@@ -189,6 +197,12 @@ module Culter::SRX
 				return st.split(/\uE001/)
 			end
 		end
+	
+		def cut_debug(st)
+            st = st.clone
+			@rules.each { |rule| rule.apply_debug!(st) }
+			return st
+		end		
 	
 		def rulesCount() @rules.count end
 	end

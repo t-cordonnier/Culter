@@ -34,8 +34,8 @@ module Culter::CSE
 	class SuperRule < Culter::SRX::Rule		# :nodoc: all
 		attr_accessor :beforeKeep, :afterKeep
 		
-		def initialize(isBreak)
-			@break = isBreak
+		def initialize(isBreak, name = nil)
+			super(isBreak, name)
 			@beforeKeep = nil; @afterKeep = nil
 		end
         

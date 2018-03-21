@@ -29,10 +29,10 @@ module Culter::CSE::XML
 				@protectedParts[attributes['languagerulename']] = @curProtectedParts
 				@joins[attributes['languagerulename']] = attributes['join']
 			elsif element == 'rule' and attributes['break'] == 'yes'    # No SRX in this case
-				newRule! Culter::CSE::SuperRule.new(true)
+				newRule! Culter::CSE::SuperRule.new(true, newRuleName())
 				return
 			elsif element == 'break-rule'     # No SRX in this case
-				newRule! Culter::CSE::SuperRule.new(true)
+				newRule! Culter::CSE::SuperRule.new(true, newRuleName())
 				return
 			elsif element == 'beforebreak' 
 				if attributes['keep'] != nil then @curRule.beforeKeep = attributes['keep'] end

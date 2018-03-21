@@ -32,7 +32,7 @@ module Culter::CSC
 		end
 		
 		def to_rules
-			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break)
+			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break, "Template:#{@ruleRef.name}")
 			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/, @items.join("|"))
 			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/, @items.join("|"))            
 			return rule		

@@ -21,6 +21,10 @@ while line = gets
 		i = 0; start = Time.new
 		puts "\n\n"
 		culter.cut(line) { |phrase| i = i + 1; puts "#{i} --- ", phrase }
+		if $CULTER_VERBOSE > 1 then
+			puts "Applied rules : \n"
+			puts culter.cut_debug(line)
+		end
 		puts "Time : #{Time.new - start} seconds"
 	else
 		# Default: acts as a filter stdin->stdout

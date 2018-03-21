@@ -42,7 +42,7 @@ module Culter::CSC::YML
 			obj['rule-templates'].each_pair { |k,v| @ruleTemplates[k] = to_rule_template(k, v) }			
 
 			@langRules = {}
-			obj['rules'].each_pair { |name,list| @langRules[name] = list.collect { |v| to_lang_rule(v) } }
+			obj['rules'].each_pair { |name,list| @langRules[name] = list.each_with_index.map { |v,idx| to_lang_rule("#{name}/#{idx}", v) } }
 		end
 		
 		def extension() 'cscy' end
@@ -56,13 +56,13 @@ module Culter::CSC::YML
 			return res
 		end
 		
-		def to_lang_rule(yaml_hash)
+		def to_lang_rule(name, yaml_hash)
 			if yaml_hash['type'] =~ /^break/
-				rule = Culter::SRX::Rule.new(true)
+				rule = Culter::SRX::Rule.new(true, name)
 				rule.before = yaml_hash['before']
 				rule.after = yaml_hash['after']
 			elsif yaml_hash['type'] =~ /^exception/
-				rule = Culter::SRX::Rule.new(false)
+				rule = Culter::SRX::Rule.new(false, name)
 				rule.before = yaml_hash['before']
 				rule.after = yaml_hash['after']			
 			elsif yaml_hash['type'] == 'apply-template'
@@ -96,7 +96,7 @@ module Culter::CSC::YML
 		def to_rule_template(name, yaml_hash)
 			tpl = Culter::CSC::RuleTemplate.new(name)
 			tpl.params=yaml_hash['params']
-			tpl.rewriteRule = to_lang_rule(yaml_hash['rewrite'])
+			tpl.rewriteRule = to_lang_rule(name, yaml_hash['rewrite'])
 			return tpl
 		end
 	end
