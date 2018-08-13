@@ -4,23 +4,25 @@ rules-mapping:
          - '[dD][eE](\W.*)?': Deutsch
          - '[eE][nN](\W.*)?': English
          - '[fF][rR](\W.*)?': Français
+         - '[hH][uU](\W.*)?': Magyar
          - '.*': Common
          
 rule-templates:
     abbreviations:
-        params:
-            - words
         rewrite:
             type: exception-rule
             before: \b(%{words})\.
             after: \s
     ordinal-followers:
-        params:
-            - words
         rewrite:
             type: exception-rule
             before: '[0-9]\.'
-            after: '\s(%{words})'
+            after: '\s(%{words})\b'
+    ordinal-followers-with-endings:
+        rewrite:
+            type: exception-rule
+            before: '[0-9]\.'
+            after: '\s(%{words})(%{endings})?'
 
 rules:
     Common:
@@ -70,3 +72,27 @@ rules:
                  - jahrhundert(s)?
                  - tag(es|s|ung)?
 
+    Magyar:
+       - type: apply-template
+         template-name: ordinal-followers-with-endings
+         params:
+            - name: words
+              loop:
+                 - január
+                 - február
+            - name: endings
+              loop:
+                 - ban?
+                 - ból
+                 - hoz
+                 - ig
+       - type: apply-template
+         template-name: ordinal-followers-with-endings
+         params:
+            - name: words
+              loop:
+                 - szeptember
+                 - október
+            # Alternative : directly set value
+            - name: endings
+              value: ben?|bol|nek|nél

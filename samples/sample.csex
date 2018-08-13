@@ -47,12 +47,12 @@
 		<languagerule languagerulename="Français" join=" ">
             <!-- Apply a template: this will generate one single rule with all abbreviations -->
 			<apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Mr</item>
                     <item>Mmes?</item>
                     <item>Mlles?</item>
 					<item>n°s</item>
-                </loop>
+                </param>
 			</apply-rule-template>        
 			<!-- Shows sample of what template makes possible to simplify : -->
 			<rule break="no">
@@ -65,25 +65,25 @@
         </languagerule>
 		<languagerule languagerulename="English" join=" ">
 			<apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Dr</item>
                     <item>Mr</item>
                     <item>Mrs</item>
-                </loop>
+                </param>
 			</apply-rule-template>
         </languagerule>
 		<languagerule languagerulename="Deutsch" join=" ">
 			<apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>GMBH</item>
                     <item>HBF</item>
-                </loop>
+                </param>
 			</apply-rule-template>
 			<apply-rule-template name="ordinal followers">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>jahrhundert(s)?</item>
                     <item>tag(es|s|ung)?</item>
-                </loop>
+                </param>
 			</apply-rule-template>
         </languagerule>
 		<languagerule languagerulename="Nihongo" join="" />	<!-- do not insert spaces between strings -->

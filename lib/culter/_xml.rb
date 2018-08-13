@@ -135,7 +135,6 @@ module Culter::XML::Convert
 				dest.puts "\t<rule-templates>"
 				self.ruleTemplates.each do |k,v| 
 					dest.puts "\t\t<rule-template name='#{k}'>"
-					v.params.each { |k1,v1| dest.puts "\t<rule-template-param name='#{k1}' join='|' />" }
 					dest.puts "\t\t\t<rewrite>"
 					v.rewriteRule.to_srx(dest)
 					dest.puts "\t\t\t</rewrite>"					

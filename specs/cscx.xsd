@@ -196,44 +196,51 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="rule-template" minOccurs="1" maxOccurs="unbounded">
-                    <!-- For the moment the engine supports only one parameter. In the future it should change. -->
-                    <xs:element name="rule-template-param" minOccurs="1" maxOccurs="1">
-		      <xs:complexType>
+		  <xs:complexType>
+                        <xs:choice>
+			  <xs:element name="rewrite"><xs:complexType><xs:group ref="ruleSpec" /></xs:complexType></xs:element>
+                        </xs:choice>
                         <xs:attribute name="name" type="xs:string" use="required" />
-                        <xs:attribute name="join" type="xs:string" use="optional" />    <!-- actually not really supported -->
-		      </xs:complexType>
-                    </xs:element>
-		    <xs:element name="rewrite"><xs:complexType><xs:group ref="ruleSpec" /></xs:complexType></xs:element>
+		  </xs:complexType>
                 </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="apply-rule-template">
         <xs:annotation>
             <xs:documentation>Generate one big rule with given parameters</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="loop" minOccurs="1" maxOccurs="1">
+                <xs:element name="param" minOccurs="1" maxOccurs="unbounded">
 		  <xs:complexType>
-                        <xs:choice minOccurs="1" maxOccurs="unbounded">							
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">							
                             <xs:element name="item" type="xs:string" />
                             <xs:element name="item-list-file">
-								<xs:complexType>
-									<xs:attribute name="name" type="xs:string" use="required" />
-									<xs:attribute name="format" type="xs:string" use="required" />	<!-- actually: 'txt:' followed by encoding -->
-									<xs:attribute name="remove" type="xs:string" use="optional" />	<!-- if present, a string which will be removed from all entries in the file -->							
-									<xs:attribute name="comments" type="xs:string" use="optional" />	<!-- if present, lines matching this regex will be considered as comments -->
-								</xs:complexType>
-							</xs:element>
+			      <xs:complexType>
+				<xs:attribute name="name" type="xs:string" use="required" />
+				<xs:attribute name="format" type="xs:string" use="required" />	<!-- actually: 'txt:' followed by encoding -->
+				<xs:attribute name="remove" type="xs:string" use="optional" />	<!-- if present, a string which will be removed from all entries in the file -->							
+				<xs:attribute name="comments" type="xs:string" use="optional" />	<!-- if present, lines matching this regex will be considered as comments -->
+			      </xs:complexType>
+                            </xs:element>
                         </xs:choice>
-                        <xs:attribute name="param" type="xs:string" use="required" />
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="mode" use="optional">
+			  <xs:simpleType>
+			    <xs:restriction base="xs:string">
+			      <xs:enumeration value="loop"/>	<!-- will be followed by an enumeration of values -->
+			      <xs:enumeration value="value"/>	<!-- default: value will be put in an attribute -->
+			    </xs:restriction>
+			  </xs:simpleType>
+			</xs:attribute>
+                        <xs:attribute name="value" type="xs:string" use="optional" />	<!-- only if mode = value or not specified -->
 		  </xs:complexType>
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required" />
         </xs:complexType>
-    </xs:element>	
-	
+    </xs:element>
+    	
 </xs:schema>

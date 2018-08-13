@@ -9,15 +9,11 @@ rules-mapping:
          
 rule-templates:
     abbreviations:
-        params:
-            - words
         rewrite:
             type: exception-rule
             before: \b(%{words})\.
             after: \s
     ordinal-followers:
-        params:
-            - words
         rewrite:
             type: exception-rule
             before: '[0-9]\.'

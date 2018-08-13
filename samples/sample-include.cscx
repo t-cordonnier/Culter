@@ -19,21 +19,21 @@
 		<!-- rule which did not exist in previous file -->
 		<languagerule languagerulename="Esperanto">            
 			<apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>S-ro</item>
                     <item>S-ino</item>
                     <item>D-ro</item>
-                </loop>
+                </param>
 			</apply-rule-template>        
         </languagerule>
 		<languagerule languagerulename="Français" extension-mode="before">
             <!-- Define a new abbreviation list.  -->
             <!-- This generates a new rule, but since extension-mode = before, it is simply added before existing ones. -->
 			<apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Cf</item>
                     <item>[pP]</item>
-                </loop>
+                </param>
 			</apply-rule-template> 
         </languagerule>
 	</languagerules>

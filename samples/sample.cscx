@@ -7,12 +7,12 @@
         <languagemap languagepattern="[dD][eE](\W.*)?" languagerulename="Deutsch"/>
         <languagemap languagepattern="[eE][nN](\W.*)?" languagerulename="English"/>
         <languagemap languagepattern="[fF][rR](\W.*)?" languagerulename="Français"/>
+        <languagemap languagepattern="[hH][uU](\W.*)?" languagerulename="Magyar"/>
         <languagemap languagepattern=".*" languagerulename="Common"/>
     </rules-mapping>
     <!-- Rule templates: enable to repeat a standard schema -->
     <rule-templates>
         <rule-template name="abbreviations">
-            <rule-template-param name="words" join="|" />
             <rewrite>
                 <rule break="no">
                     <beforebreak>\b(%{words})\.</beforebreak>   <!-- avoids repeating dot at the end -->
@@ -21,11 +21,18 @@
             </rewrite>
         </rule-template>
         <rule-template name="ordinal followers">
-            <rule-template-param name="words" join="|" />
             <rewrite>
                 <rule break="no">
                     <beforebreak>[0-9]\.</beforebreak>
-                    <afterbreak>\s(%{words})</afterbreak>
+                    <afterbreak>\s(%{words})\b</afterbreak>
+                </rule>
+            </rewrite>
+        </rule-template>        
+        <rule-template name="ordinal followers with endings">
+            <rewrite>
+                <rule break="no">
+                    <beforebreak>[0-9]\.</beforebreak>
+                    <afterbreak>\s(%{words})(%{endings})?\b</afterbreak>
                 </rule>
             </rewrite>
         </rule-template>        
@@ -41,13 +48,13 @@
         <languagerule languagerulename="Français">
             <!-- Apply a template: this will generate one single rule with all abbreviations -->
             <apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Mr</item>
                     <item>Mmes?</item>
                     <item>Mlles?</item>
                     <item>n°s</item>
                     <item-list-file name="sample-abbreviations.FR" format="txt:UTF-8" remove="\.$" comments="^[\#\;]" />
-                </loop>
+                </param>
             </apply-rule-template>        
             <!-- Shows sample of what template makes possible to simplify : -->
             <rule break="no">
@@ -60,28 +67,48 @@
         </languagerule>
         <languagerule languagerulename="English">
             <apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Dr</item>
                     <item>Mr</item>
                     <item>Mrs</item>
-                </loop>
+                </param>
             </apply-rule-template>
         </languagerule>
         <languagerule languagerulename="Deutsch">
             <apply-rule-template name="abbreviations">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>GMBH</item>
                     <item>HBF</item>
-                </loop>
+                </param>
             </apply-rule-template>
             <apply-rule-template name="ordinal followers">
-                <loop param="words">
+                <param name="words" mode="loop">
                     <item>Jahrhundert(s)?</item>
                     <item>Tag(es|s|ung)?</item>
-                </loop>
+                </param>
             </apply-rule-template>
         </languagerule>
-    </languagerules>
-    
+        <languagerule languagerulename="Magyar">
+            <apply-rule-template name="ordinal followers with endings">
+                <param name="words" mode="loop">
+                    <item>január</item>
+                    <item>február</item>
+                </param>
+                <!-- Sample with endings as loop -->
+                <param name="endings" mode="loop">
+                    <item>ban</item>
+                    <item>ból</item>
+                    <item>hoz</item>
+                </param>
+            </apply-rule-template>
+            <apply-rule-template name="ordinal followers with endings">
+                <param name="words" mode="loop">
+                    <item>szeptember</item>
+                    <item>október</item>
+                </param>
+                <!-- Sample with endings as value (equivalent) -->
+                <param name="endings" value="ben?|bol|nek" />
+            </apply-rule-template>
+        </languagerule>
+    </languagerules>    
 </seg-rules>
-

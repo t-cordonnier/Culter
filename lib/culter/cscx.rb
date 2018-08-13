@@ -85,12 +85,12 @@ module Culter::CSC::XML
 			elsif element == 'rule-template'
 				@curTemplate = attributes['name']
 				@ruleTemplates[attributes['name']] = Culter::CSC::RuleTemplate.new(attributes['name'])
-			elsif element == 'rule-template-param'
-				@ruleTemplates[@curTemplate].params[attributes['name']] = attributes
 			elsif element == 'apply-rule-template'
 				@curTemplate = attributes['name']
-			elsif element == 'loop'
-				@loop = []
+				@params = {}		# start new hash
+			elsif element == 'param'
+				@params[attributes['name']] = attributes['value']
+				if attributes['mode'] == 'loop' then @loop = []; @params[attributes['name']] = @loop end	# start array
 			elsif element == 'item-list-file'
                 if attributes['format'] =~ /^te?xt(?:\:(.+))?$/	# one per line
 					if $1 != nil then attributes['format'] = "r:#{$1}" else attributes['format'] = 'r' end
@@ -114,7 +114,7 @@ module Culter::CSC::XML
 		def tag_end(element)			
 			@where = ''
 			if element == 'apply-rule-template'
-				@curLangRule << Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@loop)
+				@curLangRule << Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[@curTemplate],@params)
 			elsif element == 'rules-mapping'
 				if @mappingExtMode == 'before' then @extended.defaultMapRule.each { |r| @defaultMapRule << r } end
 			elsif element == 'maprule'

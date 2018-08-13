@@ -13,28 +13,33 @@ require 'culter/srx'
 module Culter::CSC
 
 	class RuleTemplate
-		attr_accessor :params, :rewriteRule, :name
+		attr_accessor :rewriteRule, :name
 		
 		def initialize(name)
 			@name = name
-			@params = {}
 		end
 		
 		def to_yaml_struct()  
-			return { 'params' => @params, 'rewrite' => @rewriteRule.to_yaml_struct() }			
+			return { 'rewrite' => @rewriteRule.to_yaml_struct() }			
 		end		
 	end
 
 	class ApplyRuleTemplate
-		def initialize(templateRef, loop)
+		def initialize(templateRef, params)
 			@ruleRef = templateRef
-			@items = loop
+			@params = params
+		end
+		
+		def build_param_expression(param_name)
+			if @params[param_name].is_a? Array then @params[param_name].join("|")	# convert to long string, with 'OR'
+			elsif @params[param_name].is_a? String then @params[param_name]			# string: as is
+			end
 		end
 		
 		def to_rules
 			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break, "Template:#{@ruleRef.name}")
-			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/, @items.join("|"))
-			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/, @items.join("|"))            
+			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
+			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
 			return rule		
 		end
 		
@@ -44,15 +49,25 @@ module Culter::CSC
 		
 		def to_cscx(dest)
 			dest.puts "\t\t\t<apply-rule-template name='#{@ruleRef.name}'>"
-			dest.puts "\t\t\t\t<loop param='#{ruleRef.params.keys[0]}'>"
-			@items.each { |item| dest.puts "\t\t\t\t<item>#{@item}</item>" }
-			dest.puts "\t\t\t\t</loop>"
+			@params.each do |key, val|
+				if val.is_a? String then dest.puts "\t\t\t\t<param name='#{key}' value='#{val}' />\n"
+				elsif val.is_a? Array then 
+					dest.puts "\t\t\t\t<param name='#{key}' mode='loop'>\n"
+					val.each { |item| dest.puts "\t\t\t\t\t<item>#{item}</item>\n" }
+					dest.puts "\t\t\t\t</param>"
+				end
+			end
 			dest.puts "\t\t\t</apply-rule-template>"
 		end		
 		
 		def to_yaml_struct()  
 			res = { 'type' => 'apply-rule-template', 'template-name' => @ruleRef.name }
-			res['params'] = @ruleRef.params.collect do |param0| { 'name' => param0, 'loop' => @items } end 			
+			res['params'] = []
+			@params.each do |key,val| 
+				if val.is_a? String then res['params'] << { 'name' => key, 'value' => val } 
+				elsif val.is_a? Array then res['params'] << { 'name' => key, 'loop' => val } 
+				end
+			end 			
 			return res
 		end
 	end

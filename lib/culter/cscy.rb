@@ -66,7 +66,13 @@ module Culter::CSC::YML
 				rule.before = yaml_hash['before']
 				rule.after = yaml_hash['after']			
 			elsif yaml_hash['type'] == 'apply-template'
-				rule = Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[yaml_hash['template-name']],read_loop(yaml_hash['params'][0]['loop']))	
+				params = {}
+				yaml_hash['params'].each do |spec|
+					if spec.has_key? 'value' then params[spec['name']] = spec['value']
+					elsif spec.has_key? 'loop' then params[spec['name']] = read_loop(spec['loop']).flatten
+					end
+				end
+				rule = Culter::CSC::ApplyRuleTemplate.new(@ruleTemplates[yaml_hash['template-name']],params)	
 			end
 			return rule
 		end
@@ -95,7 +101,6 @@ module Culter::CSC::YML
 		
 		def to_rule_template(name, yaml_hash)
 			tpl = Culter::CSC::RuleTemplate.new(name)
-			tpl.params=yaml_hash['params']
 			tpl.rewriteRule = to_lang_rule(name, yaml_hash['rewrite'])
 			return tpl
 		end
