@@ -30,10 +30,13 @@ module Culter::XML::Convert
 	# Param version: can be used to generate SRX 1.0
 	# Param langs: if provided, array of languages to generate an non-cascade SRX file
 	# Param mapruleName: to generate SRX 2.0 from other format having several rule names, select one
-	def to_srx(dest = nil, version = '2.0', langs = nil, mapruleName = nil)
+	# Param mode: one of
+	#		machine (default):	converts template to big regular expressions, which are faster to parse_stream
+	#		human:	converts template to set of rules. Slower, but easier to read for humans.	
+	def to_srx(dest = nil, version = '2.0', langs = nil, mapruleName = nil, mode = 'machine')
 		if dest == nil
 			dest = StringIO.new
-			to_srx(dest, version, langs, mapRuleName)
+			to_srx(dest, version, langs, mapRuleName, mode)
 			return dest
 		else
 			dest.puts "<srx version='#{version}' xmlns='http://www.lisa.org/srx#{version.gsub(/\./,'')}'>"
@@ -54,7 +57,7 @@ module Culter::XML::Convert
 			if langs == nil then
 				@langRules.each do |k,v| 
 					dest.puts "\t\t\t<languagerule languagerulename='#{k}'>"
-					v.each { |r| r.to_srx(dest) }
+					v.each { |r| r.to_srx(dest, mode) }
 					dest.puts "\t\t\t</languagerule>"
 				end
 			else

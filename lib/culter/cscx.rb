@@ -162,7 +162,7 @@ module Culter::CSC::XML
 					@langRules[langMap.rulename].each do |r| 
 						if r.is_a? Culter::SRX::Rule then rules << r
 						elsif r.is_a? Culter::CSC::ApplyRuleTemplate then
-							rules << r.to_rules
+							rules << r.to_rules('machine')
 							if $CULTER_VERBOSE > 3 then
 								puts "Built rule : #{r.to_rules.break} /#{r.to_rules.before}/ -> /#{r.to_rules.after}/"
 							end

@@ -23,10 +23,11 @@ doc = Culter::Args::load_file(ARGV.shift)
 tra = ARGV.shift
 if tra =~ /srx$/
 	require 'getoptlong'
-	version = '2.0'; langs = nil; mapruleName = nil
+	version = '2.0'; langs = nil; mapruleName = nil; mode = 'machine'
 	GetoptLong.new(
 		[ '--verbose', '-V', GetoptLong::OPTIONAL_ARGUMENT ],
 		[ '--version', '-v', GetoptLong::OPTIONAL_ARGUMENT ],
+		[ '--mode', '-M', GetoptLong::OPTIONAL_ARGUMENT ],
 		[ '--maprule', '--maprule-name', '-m', GetoptLong::OPTIONAL_ARGUMENT ],
 		[ '--uncascade', '--langs', '-l', GetoptLong::OPTIONAL_ARGUMENT ]
 	).each do |opt, arg|
@@ -35,12 +36,13 @@ if tra =~ /srx$/
 			when '--version' then version = arg 
 			when '--uncascade' then langs = arg.split(',')
 			when '--maprule' then mapruleName = arg
+			when '--mode' then mode = arg
 		end
 	end	
 	if tra == 'srx' then 
-		doc.to_srx($stdout, version, langs, mapruleName)
+		doc.to_srx($stdout, version, langs, mapruleName, mode)
 	else
-		File.open(tra, 'w:UTF-8') { |f| f.puts "<?xml version='1.0' encoding='UTF-8'?>"; doc.to_srx(f, version, langs, mapruleName) }
+		File.open(tra, 'w:UTF-8') { |f| f.puts "<?xml version='1.0' encoding='UTF-8'?>"; doc.to_srx(f, version, langs, mapruleName, mode) }
 	end
 elsif tra =~ /cscx$/
 	require 'getoptlong'

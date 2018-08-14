@@ -42,7 +42,7 @@ module Culter::SRX
 			st.gsub!(@regex, "\\1<#{@ruleName}:#{@break}>\\2")
 		end  		
 		
-		def to_srx(dest)
+		def to_srx(dest, mode = 'machine')
 			dest.write "\t\t\t\t<rule "
 			if @break then dest.puts 'break="yes">' else dest.puts 'break="no">' end
 			if before != nil then dest.puts "\t\t\t\t\t<beforebreak>#{before.gsub(/\(\?\:/,'(')}</beforebreak>" end

@@ -17,7 +17,9 @@ Without parameter it will run the simple segmenter.
 Option -v gives more details also in STDOUT during segmentation (for debug)
 
 The script bin/culter-conv.rb enables to convert between all supported file formats (SRX, CSCX, CSEX).
-If you convert from CS[CE] to SRX, templates will be converted to their equivalent in SRX.
+If you convert from CS[CE] to SRX, templates will be converted to their equivalent in SRX;
+you can select between human mode (each combination in separate rule, easier to read)
+and machine mode (all possibilities combined to a single rule, faster to parse by computer but harder to read by humans).
 If you convert from CSE to lower format, specific features are simply removed.
 
 The script bin/culter-join.rb enables to use the join feature of CSCE[XY] formats:

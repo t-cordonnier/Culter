@@ -36,15 +36,56 @@ module Culter::CSC
 			end
 		end
 		
-		def to_rules
-			rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break, "Template:#{@ruleRef.name}")
-			rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
-			rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
-			return rule		
+		def to_rules(mode = 'machine')
+			if mode == 'machine'
+				# Builds one long rule : this is faster
+				rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break, "Template:#{@ruleRef.name}")
+				rule.before = @ruleRef.rewriteRule.before.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
+				rule.after = @ruleRef.rewriteRule.after.gsub(/\%\{(\w+)\}/) { build_param_expression($1) }
+				return rule		
+			elsif mode == 'human'
+				# Builds long list of rules: slower but more human-readable
+				befores = [ @ruleRef.rewriteRule.before.dup ]; afters = [ @ruleRef.rewriteRule.after.dup ]
+				@params.each do |key, val|
+					if val.is_a? String then
+						befores.each { |item| item.gsub!(/\%\{#{key}\}/, val) }
+						afters.each { |item| item.gsub!(/\%\{#{key}\}/, val) }
+					elsif val.is_a? Array then
+						if @ruleRef.rewriteRule.before =~ /\%\{#{key}\}/
+							tmp = []
+							befores.each do |item|
+								val.each { |val0| tmp << item.gsub(/\%\{#{key}\}/, val0) }
+							end
+							befores = tmp
+						end
+						if @ruleRef.rewriteRule.after =~ /\%\{#{key}\}/
+							tmp = []
+							afters.each do |item|
+								val.each { |val0| tmp << item.gsub(/\%\{#{key}\}/, val0) }
+							end
+							afters = tmp
+						end
+					end
+				end
+				list = []
+				befores.each do |bef0|
+					afters.each do |aft0|
+						rule = Culter::SRX::Rule.new(@ruleRef.rewriteRule.break, "Template:#{@ruleRef.name}/#{bef0}/#{aft0}")
+						rule.before = bef0
+						rule.after = aft0
+						list << rule
+					end
+				end
+				return list
+			end
 		end
 		
-		def to_srx(dest)
-			to_rules().to_srx(dest)
+		def to_srx(dest, mode = 'machine')
+			if mode == 'machine'
+				to_rules('machine').to_srx(dest)
+			elsif mode == 'human'
+				to_rules('human').each { |r| r.to_srx(dest) }
+			end
 		end
 		
 		def to_cscx(dest)
