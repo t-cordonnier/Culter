@@ -25,6 +25,10 @@ If you convert from CSE to lower format, specific features are simply removed.
 The script bin/culter-join.rb enables to use the join feature of CSCE[XY] formats:
 in these formats you can specify whenever spaces should be added or not when joining segments to a paragraph.
 
+The script bin/ensis.rb opens a GUI which enables to test a set of rules.
+Parameters: name of the file and language.
+Works with JRuby and IronRuby without any more library. Works with standard CRuby but you need to install Gtk2 for Ruby.
+
 LICENSE:
 ========
 
