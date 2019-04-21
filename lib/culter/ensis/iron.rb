@@ -42,7 +42,7 @@ module Culter::Ensis
       super()
       self.Controls.add(textBox = System::Windows::Forms::TextBox.new())
       textBox.multiline = true
-      textBox.TextChanged { |s,e| resultBox.setContents(culter.cut(textBox.Text.to_s)) } 
+      textBox.TextChanged { |s,e| resultBox.setContents(DebugLine.cut_debug(culter,textBox.Text.to_s)) } 
       textBox.AutoSize = true; textBox.Dock = System::Windows::Forms::DockStyle.Fill
     end
   end  
@@ -54,8 +54,10 @@ module Culter::Ensis
       @view.Dock = System::Windows::Forms::DockStyle.Fill
       @view.columns.add(colId = System::Windows::Forms::DataGridViewTextBoxColumn.new)	  
       @view.columns.add(colSeg = System::Windows::Forms::DataGridViewTextBoxColumn.new)
+      @view.columns.add(colRule = System::Windows::Forms::DataGridViewTextBoxColumn.new)
       colId.HeaderText = 'Id'; colId.Width = 50
-      colSeg.HeaderText = 'Segment'; colSeg.Width = 450
+      colSeg.HeaderText = 'Segment'; colSeg.Width = 350
+      colRule.HeaderText = 'Rule'; colRule.Width = 100
       @view.ReadOnly = true
     end
     
@@ -65,7 +67,8 @@ module Culter::Ensis
       split.each do |segment|
         rowId = @view.Rows.Add
         i = i + 1; @view.Rows[rowId].Cells[0].Value = i
-        @view.Rows[rowId].Cells[1].Value = segment
+        @view.Rows[rowId].Cells[1].Value = segment.phrase_with_mark
+        @view.Rows[rowId].Cells[2].Value = segment.rules[-1]	
       end
     end
   end
