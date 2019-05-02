@@ -33,6 +33,7 @@ module Culter
 			return res unless block_given?
 		end
 		
+		def name() 'Simple segmenter' end
 	end
 	
 	##
@@ -64,6 +65,7 @@ module Culter
 			end
 		end
 	
+		def name() @list.collect { |item| item.name }.join('') end
 	end
 		
 end

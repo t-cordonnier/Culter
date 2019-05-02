@@ -6,7 +6,7 @@ module Culter::Ensis
 
   class Tester < javax.swing.JFrame
     def initialize(culter)
-      super('Segmentation Rules Tester')
+      super('Segmentation Rules Tester - ' + culter.name)
       @culter = culter
       self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
       self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))      

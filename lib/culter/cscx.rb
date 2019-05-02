@@ -130,7 +130,7 @@ module Culter::CSC::XML
 			end
 		end
 		
-		def file=(st) @file = st end		  
+		attr_accessor :file
 	end
 	
 	##
@@ -150,6 +150,7 @@ module Culter::CSC::XML
 			@langRules = callback.langRules
 			@formatHandle = callback.formatHandle
 			@ruleTemplates = callback.ruleTemplates
+			@file = callback.file
 		end
 		
 		##
@@ -171,9 +172,10 @@ module Culter::CSC::XML
 					if not(@cascade) then return Segmenter.new(rules,@formatHandle) end
 				end
 			end
-			return Culter::SRX::Segmenter.new(rules,@formatHandle)
+			return Culter::SRX::Segmenter.new(rules,@formatHandle,"#{@file}:#{lang}")
 		end
-			
+		
+		def name() @file == nil ? '<unnamed>' : @file end
 	end
 	
 end

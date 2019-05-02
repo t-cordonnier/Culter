@@ -12,7 +12,7 @@ module Culter::Ensis
     def initialize(culter)
       super()
       @culter = culter
-      self.set_title('Segmentation rules tester')
+      self.set_title('Segmentation Rules Tester - ' + culter.name)
       self.signal_connect('destroy') { Gtk.main_quit }
       @global_box = Gtk::VBox.new(false,0)
       self.add @global_box

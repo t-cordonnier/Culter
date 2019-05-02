@@ -120,6 +120,9 @@ module Culter::SRX
 		def tag_end(element)			
 			@where = ''
 		end
+		
+		# Used in editor
+		attr_accessor :file
 		  
 	end
 	
@@ -137,6 +140,7 @@ module Culter::SRX
 			@defaultMapRule = callback.defaultMapRule
 			@langRules = callback.langRules
 			@formatHandle = callback.formatHandle
+			@file = callback.file
 		rescue Exception => e
 			puts "Error during parsing: #{e}"
 		end
@@ -153,7 +157,7 @@ module Culter::SRX
 					if not(@cascade) then return Segmenter.new(rules,@formatHandle) end
 				end
 			end
-			return Segmenter.new(rules,@formatHandle)
+			return Segmenter.new(rules,@formatHandle,"#{@file}:#{lang}")
 		end
 		
 		def to_yaml_struct(mapruleName = nil)  
@@ -164,19 +168,22 @@ module Culter::SRX
 			@langRules.each do |k,v| res['rules'][k] = v.collect { |rule| rule.to_yaml_struct() } end
 			return res
 		end
+		
+		def name() @file end
 	end
 	
 	class Segmenter
 	
-		attr_reader :tagStart, :tagEnd, :tagIsolated, :rules
+		attr_reader :tagStart, :tagEnd, :tagIsolated, :rules, :name
 	
-		def initialize(rules,formatHandle)
+		def initialize(rules,formatHandle,name='')
 			@rules = rules
 			@formatHandle = formatHandle
 			@tagStart = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*>'
 			@tagEnd = '</\w[\w\-]*?\s*>'
 			@tagIsolated = '<\w[\w\-]*?(?:\s+[\w\-]+\s*=\s*[\"\'][^\"\']+[\"\'])*\s*/\s*>'
 			@rules.each { |rule| rule.prepare!(self,formatHandle) }
+			@name = name
 		end
 		
 		def change_tags!(tagStart,tagEnd,tagIsolated)

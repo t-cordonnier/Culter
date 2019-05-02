@@ -7,7 +7,7 @@ module Culter::Ensis
   class Tester < System::Windows::Forms::Form
     def initialize(culter)
       super()
-      self.text = 'Segmentation Rules Tester'
+      self.text = 'Segmentation Rules Tester - ' + culter.name
       @culter = culter
       self.FormClosing { |s,e| System::Environment::Exit(0) }
       self.controls.add(@tab = System::Windows::Forms::TableLayoutPanel.new)
