@@ -31,17 +31,26 @@ module Culter::Ensis
       menu1 = javax.swing.JMenu.new('Test')
       self.jMenuBar.add menu1
       item1 = javax.swing.JMenuItem.new 'Test'
-      item1.addActionListener do |ev|
-	lang = javax.swing.JOptionPane.showInputDialog(self, "Language: ")
-        segmenter = Culter::Args::get_segmenter(@culter, lang)
-        Culter::Ensis::Tester.new(segmenter).start	
-      end
+      item1.addActionListener { |ev| open_test }
       item2 = javax.swing.JMenuItem.new 'Quit'      
       item2.addActionListener { |ev| java.lang.System.exit(0) }
       menu1.add item1; menu1.add item2
       self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
     end
+    def input_dialog(question) return javax.swing.JOptionPane.showInputDialog(self, question); end
   end
+  
+  class OptionsBox < javax.swing.JPanel
+    
+  end
+  
+  class RulesMappingBox < javax.swing.JPanel
+    
+  end
+  
+  class TemplatesBox < javax.swing.JPanel
+    
+  end  
   
   # ------------------------------ Tester ------------------------
   

@@ -41,6 +41,15 @@ module Culter::Ensis
 
   class Editor
     def create_all_components
+      self.add_pane('Options', OptionsBox.new)
+      self.add_pane('Rules Mapping', RulesMappingBox.new)
+      self.add_pane('Rule templates', TemplatesBox.new)
+    end
+    def open_test
+      lang = input_dialog('Select Language (ISO-639 code): ')
+      if lang != nil then 
+	Culter::Ensis::Tester.new(Culter::Args::get_segmenter(@culter, lang)).start 
+      end
     end
   end
   

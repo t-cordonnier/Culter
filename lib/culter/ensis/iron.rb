@@ -46,19 +46,15 @@ module Culter::Ensis
       self.menu.MenuItems.Add menu1
       
       item1 = System::Windows::Forms::MenuItem.new 'Test'
-      item1.click do
-	lang = SimpleInputDialog.new("Language: ").prompt
-	if lang != nil
-           segmenter = Culter::Args::get_segmenter(@culter, lang)
-           Culter::Ensis::Tester.new(segmenter).start	
-	end
-      end
+      item1.click { open_test }
       item2 = System::Windows::Forms::MenuItem.new 'Quit'      
       item2.click { System::Environment::Exit(0) }
       menu1.MenuItems.Add item1; menu1.MenuItems.Add item2
       
-      self.width = 500; self.height = 300
+      self.width = 500; self.height = 400
     end
+    def input_dialog(question) return SimpleInputDialog.new(question).prompt(); end
+    
   end
   
   class SimpleInputDialog < System::Windows::Forms::Form
@@ -68,7 +64,7 @@ module Culter::Ensis
       self.Text = question
       self.FormBorderStyle = System::Windows::Forms::FormBorderStyle.FixedDialog
       self.StartPosition = System::Windows::Forms::FormStartPosition.CenterScreen
-      textLabel = System::Windows::Forms::Label.new(); textLabel.Left = 50; textLabel.Top=20; textLabel.Text = question
+      textLabel = System::Windows::Forms::Label.new(); textLabel.Left = 50; textLabel.Top=20; textLabel.Width = 400; textLabel.Text = question
       @textBox = System::Windows::Forms::TextBox.new(); @textBox.Left = 50; @textBox.Top=50; @textBox.Width = 400 
       confirmation = System::Windows::Forms::Button.new(); confirmation.Text = "Ok" ; confirmation.DialogResult = System::Windows::Forms::DialogResult.OK 
       confirmation.Left = 350; confirmation.Width = 50; confirmation.Top = 90; 
@@ -88,6 +84,18 @@ module Culter::Ensis
     end
   end
                                      
+  class OptionsBox < System::Windows::Forms::GroupBox
+    
+  end
+  
+  class RulesMappingBox < System::Windows::Forms::GroupBox
+    
+  end
+  
+  class TemplatesBox < System::Windows::Forms::GroupBox
+    
+  end  
+    
   # ------------------------------ Tester ------------------------
   
   class Tester < EnsisWindow
