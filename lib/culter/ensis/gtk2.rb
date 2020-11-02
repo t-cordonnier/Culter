@@ -8,16 +8,12 @@ end
 module Culter end
 module Culter::Ensis
 
-  class Tester < Gtk::Window
-    def initialize(culter)
+  class EnsisWindow < Gtk::Window
+    def initialize()
       super()
-      @culter = culter
-      self.set_title('Segmentation Rules Tester - ' + culter.name)
-      self.signal_connect('destroy') { Gtk.main_quit }
       @global_box = Gtk::VBox.new(false,0)
       self.add @global_box
       self.create_all_components
-      self.set_default_size(300,500)
     end
     
     def start
@@ -33,6 +29,57 @@ module Culter::Ensis
     end    
   end
   
+  # ------------------------------ Editor ------------------------
+
+  class Editor < EnsisWindow
+    def initialize(culter)
+      super()
+      @culter = culter
+      self.set_title('Segmentation Rules Editor' + (culter == nil ? '' : culter.name))
+      self.signal_connect('destroy') { Gtk.main_quit }
+      menubar = Gtk::MenuBar.new
+      @global_box.pack_start( menubar, false, false, 0)
+      menu1 = Gtk::MenuItem.new('Test')
+      menubar.append menu1
+      item1 = Gtk::MenuItem.new 'Test'
+      item1.signal_connect("activate") do
+        dialog = Gtk::MessageDialog.new(self, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+	     Gtk::MessageDialog::QUESTION,
+             Gtk::MessageDialog::BUTTONS_OK_CANCEL,
+             "Select language:")
+        userEntry = Gtk::Entry.new
+        userEntry.set_size_request(250,10)
+        dialog.vbox.pack_end(userEntry, true, false, 0)
+	dialog.show_all
+	dialog.run do |response|
+            if response == Gtk::Dialog::RESPONSE_OK
+               segmenter = Culter::Args::get_segmenter(@culter, userEntry.text)
+               tester = Culter::Ensis::Tester.new(segmenter)
+               dialog.destroy
+	       tester.start
+	    else
+               dialog.destroy
+            end
+	end        
+      end
+      item2 = Gtk::MenuItem.new 'Quit'      
+      item2.signal_connect("activate") { Gtk.main_quit }
+      menu = Gtk::Menu.new
+      menu.append item1; menu.append item2
+      menu1.set_submenu menu
+    end
+  end
+  
+  # ------------------------------ Tester ------------------------
+  
+  class Tester < EnsisWindow
+    def initialize(culter)
+      super()
+      @culter = culter
+      self.set_title('Segmentation Rules Tester - ' + culter.name)
+      self.set_default_size(300,500)
+    end
+  end
   
   class TextBox < Gtk::Frame
     def initialize(culter,resultBox)

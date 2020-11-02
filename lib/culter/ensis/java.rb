@@ -4,11 +4,9 @@ require 'java'
 module Culter end
 module Culter::Ensis
 
-  class Tester < javax.swing.JFrame
-    def initialize(culter)
-      super('Segmentation Rules Tester - ' + culter.name)
-      @culter = culter
-      self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
+  class EnsisWindow < javax.swing.JFrame
+    def initialize(title)
+      super(title)
       self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))      
       self.create_all_components
     end
@@ -20,6 +18,38 @@ module Culter::Ensis
     def add_pane(name,box) 
       box.setBorder(javax.swing.BorderFactory.createTitledBorder(name))
       self.contentPane.add(box)
+    end
+  end
+  
+  # ------------------------------ Editor ------------------------
+
+  class Editor < EnsisWindow
+    def initialize(culter)
+      super('Segmentation Rules Editor' + (culter == nil ? '' : culter.name))
+      @culter = culter
+      self.jMenuBar = javax.swing.JMenuBar.new
+      menu1 = javax.swing.JMenu.new('Test')
+      self.jMenuBar.add menu1
+      item1 = javax.swing.JMenuItem.new 'Test'
+      item1.addActionListener do |ev|
+	lang = javax.swing.JOptionPane.showInputDialog(self, "Language: ")
+        segmenter = Culter::Args::get_segmenter(@culter, lang)
+        Culter::Ensis::Tester.new(segmenter).start	
+      end
+      item2 = javax.swing.JMenuItem.new 'Quit'      
+      item2.addActionListener { |ev| java.lang.System.exit(0) }
+      menu1.add item1; menu1.add item2
+      self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
+    end
+  end
+  
+  # ------------------------------ Tester ------------------------
+  
+  class Tester < EnsisWindow
+    def initialize(culter)
+      super('Segmentation Rules Tester - ' + culter.name)
+      @culter = culter
+      self.setDefaultCloseOperation(javax.swing.JFrame::DISPOSE_ON_CLOSE);
     end
   end
   

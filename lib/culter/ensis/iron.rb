@@ -4,16 +4,12 @@ require 'System.Windows.Forms'
 module Culter end
 module Culter::Ensis
 
-  class Tester < System::Windows::Forms::Form
-    def initialize(culter)
+  class EnsisWindow < System::Windows::Forms::Form
+    def initialize()
       super()
-      self.text = 'Segmentation Rules Tester - ' + culter.name
-      @culter = culter
-      self.FormClosing { |s,e| System::Environment::Exit(0) }
       self.controls.add(@tab = System::Windows::Forms::TableLayoutPanel.new)
       @tab.AutoSize = true; @tab.Dock = System::Windows::Forms::DockStyle.Fill
       self.create_all_components
-    self.width = 500; self.height = 300
     end
     
     def start
@@ -34,6 +30,72 @@ module Culter::Ensis
          group.AutoSize = true; group.Dock = System::Windows::Forms::DockStyle.Fill
          box.Dock = System::Windows::Forms::DockStyle.Fill
       end
+    end
+  end
+  
+  # ------------------------------ Editor ------------------------
+
+  class Editor < EnsisWindow
+    def initialize(culter)
+      super()
+      @culter = culter
+      self.FormClosing { |s,e| System::Environment::Exit(0) }
+      self.text = 'Segmentation Rules Editor' + (culter == nil ? '' : culter.name)
+      self.menu = System::Windows::Forms::MainMenu.new
+      menu1 = System::Windows::Forms::MenuItem.new('Test')
+      self.menu.MenuItems.Add menu1
+      
+      item1 = System::Windows::Forms::MenuItem.new 'Test'
+      item1.click do
+	lang = SimpleInputDialog.new("Language: ").prompt
+	if lang != nil
+           segmenter = Culter::Args::get_segmenter(@culter, lang)
+           Culter::Ensis::Tester.new(segmenter).start	
+	end
+      end
+      item2 = System::Windows::Forms::MenuItem.new 'Quit'      
+      item2.click { System::Environment::Exit(0) }
+      menu1.MenuItems.Add item1; menu1.MenuItems.Add item2
+      
+      self.width = 500; self.height = 300
+    end
+  end
+  
+  class SimpleInputDialog < System::Windows::Forms::Form
+    def initialize(question)
+      super()
+      self.Width = 500; self.Height = 150
+      self.Text = question
+      self.FormBorderStyle = System::Windows::Forms::FormBorderStyle.FixedDialog
+      self.StartPosition = System::Windows::Forms::FormStartPosition.CenterScreen
+      textLabel = System::Windows::Forms::Label.new(); textLabel.Left = 50; textLabel.Top=20; textLabel.Text = question
+      @textBox = System::Windows::Forms::TextBox.new(); @textBox.Left = 50; @textBox.Top=50; @textBox.Width = 400 
+      confirmation = System::Windows::Forms::Button.new(); confirmation.Text = "Ok" ; confirmation.DialogResult = System::Windows::Forms::DialogResult.OK 
+      confirmation.Left = 350; confirmation.Width = 50; confirmation.Top = 90; 
+      cancel = System::Windows::Forms::Button.new(); cancel.Text = "Cancel" ; cancel.DialogResult = System::Windows::Forms::DialogResult.Cancel 
+      cancel.Left = 400; cancel.Width = 50; cancel.Top=90; 
+      self.Controls.Add(textLabel); self.Controls.Add(@textBox)
+      self.Controls.Add(confirmation); self.Controls.Add(cancel)
+      self.AcceptButton = confirmation      
+    end
+                                     
+    def prompt() 
+      if self.ShowDialog() == System::Windows::Forms::DialogResult.OK then
+         return @textBox.text 
+      else 
+	return nil
+      end
+    end
+  end
+                                     
+  # ------------------------------ Tester ------------------------
+  
+  class Tester < EnsisWindow
+    def initialize(culter)
+      super()
+      self.text = 'Segmentation Rules Tester - ' + culter.name
+      @culter = culter
+      self.width = 500; self.height = 300
     end
   end
   

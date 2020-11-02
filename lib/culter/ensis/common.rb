@@ -38,6 +38,11 @@ module Culter::Ensis
       self.add_pane('Result', @resultBox)
     end
   end
+
+  class Editor
+    def create_all_components
+    end
+  end
   
 end
 
