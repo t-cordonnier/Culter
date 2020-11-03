@@ -5,8 +5,9 @@ module Culter end
 module Culter::Ensis
 
   class EnsisWindow < System::Windows::Forms::Form
-    def initialize()
+    def initialize(culter)
       super()
+      @culter = culter
       self.controls.add(@tab = System::Windows::Forms::TableLayoutPanel.new)
       @tab.AutoSize = true; @tab.Dock = System::Windows::Forms::DockStyle.Fill
       self.create_all_components
@@ -37,8 +38,7 @@ module Culter::Ensis
 
   class Editor < EnsisWindow
     def initialize(culter)
-      super()
-      @culter = culter
+      super(culter)
       self.FormClosing { |s,e| System::Environment::Exit(0) }
       self.text = 'Segmentation Rules Editor' + (culter == nil ? '' : culter.name)
       self.menu = System::Windows::Forms::MainMenu.new
@@ -89,7 +89,21 @@ module Culter::Ensis
   end
   
   class RulesMappingBox < System::Windows::Forms::GroupBox
-    def initialize(culter) end    
+    def initialize(culter)
+      super
+      self.controls.add(@view = System::Windows::Forms::DataGridView.new())
+      @view.Dock = System::Windows::Forms::DockStyle.Fill
+      @view.columns.add(colExpr = System::Windows::Forms::DataGridViewTextBoxColumn.new)
+      @view.columns.add(colName = System::Windows::Forms::DataGridViewTextBoxColumn.new)
+      colExpr.HeaderText = 'Expression'; colExpr.Width = 350
+      colName.HeaderText = 'Name'; colName.Width = 60
+      @view.Rows.Clear()
+      culter.defaultMapRule.each do |mr|
+        rowId = @view.Rows.Add
+        @view.Rows[rowId].Cells[0].Value = mr.pattern.to_s
+        @view.Rows[rowId].Cells[1].Value = mr.rulename
+      end
+    end    
   end
   
   class TemplatesBox < System::Windows::Forms::GroupBox
@@ -100,9 +114,8 @@ module Culter::Ensis
   
   class Tester < EnsisWindow
     def initialize(culter)
-      super()
+      super(culter)
       self.text = 'Segmentation Rules Tester - ' + culter.name
-      @culter = culter
       self.width = 500; self.height = 300
     end
   end

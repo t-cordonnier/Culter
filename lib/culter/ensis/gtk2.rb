@@ -101,11 +101,20 @@ module Culter::Ensis
   
   class RulesMappingBox < Gtk::TreeView
     def initialize(culter)
-      super(Gtk::ListStore.new(String,String))
+      super(@model = Gtk::ListStore.new(String,String))
       renderer = Gtk::CellRendererText.new
       renderer.set_property 'yalign', 0		# align to top
       append_column Gtk::TreeViewColumn.new("Expression",renderer)
+      columns[0].add_attribute renderer, "text", 0
       append_column Gtk::TreeViewColumn.new("Name",renderer)
+      columns[1].add_attribute renderer, "text", 1
+      @model.clear
+      culter.defaultMapRule.each do |mr|
+	row = @model.append
+	row[0] = mr.pattern.to_s
+	row[1] = mr.rulename
+      end
+      self.expand_all    
     end
   end
   

@@ -37,7 +37,7 @@ module Culter::Ensis
       item2.addActionListener { |ev| java.lang.System.exit(0) }
       menu1.add item1; menu1.add item2
       self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
-      self.contentPane.components[0].add_listeners(culter)
+      self.contentPane.components.each { |item| item.post_init(culter) }
     end
     def input_dialog(question) return javax.swing.JOptionPane.showInputDialog(self, question); end
   end
@@ -53,7 +53,7 @@ module Culter::Ensis
       formats.add(@fmtIsolated = box('Isolated', culter,'formatHandle.isolated'))
     end
     
-    def add_listeners(culter)
+    def post_init(culter)
       add_listener(@cascade,'cascade',culter)
       add_listener(@fmtStart,'formatHandle.start',culter)
       add_listener(@fmtEnd,'formatHandle.end',culter)
@@ -78,11 +78,21 @@ module Culter::Ensis
   end
   
   class RulesMappingBox < javax.swing.JPanel
+    def initialize(culter)
+      super
+      self.layout = java.awt.BorderLayout.new
+      self.add(@list = javax.swing.JList.new, java.awt.BorderLayout::CENTER)
+      @list.model = javax.swing.DefaultListModel.new
+    end
     
+    def post_init(culter)  
+      culter.defaultMapRule.each do |mr| @list.model.addElement("#{mr.pattern.to_s} => #{mr.rulename}") end
+    end
   end
   
   class TemplatesBox < javax.swing.JPanel
-    
+    def post_init(culter)
+    end
   end  
   
   # ------------------------------ Tester ------------------------
