@@ -107,7 +107,23 @@ module Culter::Ensis
   end
   
   class TemplatesBox < System::Windows::Forms::GroupBox
-    def initialize(culter) end    
+    def initialize(culter)    
+      super
+      self.controls.add(@view = System::Windows::Forms::DataGridView.new())
+      @view.Dock = System::Windows::Forms::DockStyle.Fill
+      @view.columns.add(colName = System::Windows::Forms::DataGridViewTextBoxColumn.new)
+      colName.HeaderText = 'Name'; colName.Width = 400
+      @view.Rows.Clear()
+      if culter.respond_to? 'ruleTemplates'
+	 @map = culter.ruleTemplates
+         culter.ruleTemplates.each do |name,rule| 
+	   rowId = @view.Rows.Add
+	   @view.Rows[rowId].Cells[0].Value = name
+	 end
+      else
+	 @map = {}
+      end
+    end    
   end  
     
   # ------------------------------ Tester ------------------------

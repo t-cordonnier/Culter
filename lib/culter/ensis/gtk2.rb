@@ -120,10 +120,22 @@ module Culter::Ensis
   
   class TemplatesBox < Gtk::TreeView
     def initialize(culter)
-      super(Gtk::ListStore.new(String))
+      super(@model = Gtk::ListStore.new(String))
       renderer = Gtk::CellRendererText.new
       renderer.set_property 'yalign', 0		# align to top
       append_column Gtk::TreeViewColumn.new("Name",renderer)
+      columns[0].add_attribute renderer, "text", 0
+      @model.clear
+      if culter.respond_to? 'ruleTemplates'
+	 @map = culter.ruleTemplates
+         culter.ruleTemplates.each do |name,rule| 
+	   row = @model.append
+	   row[0] = name
+	 end
+      else
+	 @map = {}
+      end
+      self.expand_all    
     end    
   end
 

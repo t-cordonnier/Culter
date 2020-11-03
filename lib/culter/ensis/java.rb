@@ -91,7 +91,20 @@ module Culter::Ensis
   end
   
   class TemplatesBox < javax.swing.JPanel
+    def initialize(culter)
+      super
+      self.layout = java.awt.BorderLayout.new
+      self.add(@list = javax.swing.JList.new, java.awt.BorderLayout::CENTER)
+      @list.model = javax.swing.DefaultListModel.new
+    end
+    
     def post_init(culter)
+      if culter.respond_to? 'ruleTemplates'
+	 @map = culter.ruleTemplates
+         culter.ruleTemplates.each do |name,rule| @list.model.addElement(name) end
+      else
+	 @map = {}
+      end
     end
   end  
   
