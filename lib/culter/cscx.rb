@@ -139,6 +139,7 @@ module Culter::CSC::XML
 		include Culter::XML::Load
 	
 		attr_reader :ruleTemplates
+		attr_accessor :cascade, :formatHandle
 	
 		def initialize(src)
 			callback = CscxCallbacks.new

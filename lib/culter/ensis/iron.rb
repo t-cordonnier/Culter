@@ -85,15 +85,15 @@ module Culter::Ensis
   end
                                      
   class OptionsBox < System::Windows::Forms::GroupBox
-    
+    def initialize(culter) end
   end
   
   class RulesMappingBox < System::Windows::Forms::GroupBox
-    
+    def initialize(culter) end    
   end
   
   class TemplatesBox < System::Windows::Forms::GroupBox
-    
+    def initialize(culter) end    
   end  
     
   # ------------------------------ Tester ------------------------

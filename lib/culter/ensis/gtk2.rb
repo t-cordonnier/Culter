@@ -9,11 +9,12 @@ module Culter end
 module Culter::Ensis
 
   class EnsisWindow < Gtk::Window
-    def initialize()
+    def initialize(culter)
       super()
       @global_box = Gtk::VBox.new(false,0)
       self.add @global_box
       if self.respond_to? 'create_menu' then self.create_menu end
+      @culter = culter
       self.create_all_components
     end
     
@@ -34,8 +35,7 @@ module Culter::Ensis
 
   class Editor < EnsisWindow
     def initialize(culter)
-      super()
-      @culter = culter
+      super(culter)
       self.set_title('Segmentation Rules Editor' + (culter == nil ? '' : culter.name))
       self.signal_connect('destroy') { Gtk.main_quit }
     end
@@ -59,7 +59,7 @@ module Culter::Ensis
              Gtk::MessageDialog::BUTTONS_OK_CANCEL,
              question)
         userEntry = Gtk::Entry.new
-        userEntry.set_size_request(250,10)
+        userEntry.set_size_request(250,25)
         dialog.vbox.pack_end(userEntry, true, false, 0)
 	dialog.show_all
 	res = nil
@@ -76,23 +76,53 @@ module Culter::Ensis
   end
   
   class OptionsBox < Gtk::VBox
+    def initialize(culter)
+      super()
+      self.add(@cascade = box('Cascade', culter, 'cascade'))
+      self.add(formats = Gtk::HBox.new)
+      formats.add(Gtk::Label.new('Format handles: '))
+      formats.add(@fmtStart = box('Start',culter, 'formatHandle.start'))
+      formats.add(@fmtEnd = box('End', culter,'formatHandle.end'))
+      formats.add(@fmtIsolated = box('Isolated', culter,'formatHandle.isolated'))
+    end
     
+    def box(title, culter, field)
+      box = Gtk::CheckButton.new(title)
+      if field =~ /^(.+)\.(.+)/
+          box.active = culter.send($1)[$2]
+          box.signal_connect('toggled') { culter.send($1)[$2] = box.active? }          
+      else
+          box.active = culter.send(field)
+          box.signal_connect('toggled') { culter.send(field + '=', box.active?) }
+      end
+      return box
+    end
   end
   
-  class RulesMappingBox < Gtk::Frame
-    
+  class RulesMappingBox < Gtk::TreeView
+    def initialize(culter)
+      super(Gtk::ListStore.new(String,String))
+      renderer = Gtk::CellRendererText.new
+      renderer.set_property 'yalign', 0		# align to top
+      append_column Gtk::TreeViewColumn.new("Expression",renderer)
+      append_column Gtk::TreeViewColumn.new("Name",renderer)
+    end
   end
   
-  class TemplatesBox < Gtk::Frame
-    
+  class TemplatesBox < Gtk::TreeView
+    def initialize(culter)
+      super(Gtk::ListStore.new(String))
+      renderer = Gtk::CellRendererText.new
+      renderer.set_property 'yalign', 0		# align to top
+      append_column Gtk::TreeViewColumn.new("Name",renderer)
+    end    
   end
 
   # ------------------------------ Tester ------------------------
   
   class Tester < EnsisWindow
     def initialize(culter)
-      super()
-      @culter = culter
+      super(culter)
       self.set_title('Segmentation Rules Tester - ' + culter.name)
       self.set_default_size(300,500)
     end

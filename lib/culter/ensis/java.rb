@@ -8,6 +8,7 @@ module Culter::Ensis
     def initialize(title)
       super(title)
       self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))      
+      # @culter = culter ===> error, why?!?
       self.create_all_components
     end
     
@@ -36,11 +37,43 @@ module Culter::Ensis
       item2.addActionListener { |ev| java.lang.System.exit(0) }
       menu1.add item1; menu1.add item2
       self.setDefaultCloseOperation(javax.swing.JFrame::EXIT_ON_CLOSE);
+      self.contentPane.components[0].add_listeners(culter)
     end
     def input_dialog(question) return javax.swing.JOptionPane.showInputDialog(self, question); end
   end
   
-  class OptionsBox < javax.swing.JPanel
+  class OptionsBox < javax.swing.Box
+    def initialize(culter)
+      super(javax.swing.BoxLayout::Y_AXIS)
+      self.add(@cascade = box('Cascade', culter, 'cascade'))
+      self.add(formats = javax.swing.Box.new(javax.swing.BoxLayout::X_AXIS))
+      formats.add(javax.swing.JLabel.new('Format handles: '))
+      formats.add(@fmtStart = box('Start',culter, 'formatHandle.start'))
+      formats.add(@fmtEnd = box('End', culter,'formatHandle.end'))
+      formats.add(@fmtIsolated = box('Isolated', culter,'formatHandle.isolated'))
+    end
+    
+    def add_listeners(culter)
+      add_listener(@cascade,'cascade',culter)
+      add_listener(@fmtStart,'formatHandle.start',culter)
+      add_listener(@fmtEnd,'formatHandle.end',culter)
+      add_listener(@fmtIsolated,'formatHandle.isolated',culter)
+    end    
+      
+    def add_listener(box,field,culter)  
+      if field =~ /^(.+)\.(.+)/
+          box.selected = culter.send($1)[$2]
+          box.addActionListener { |ev| culter.send($1)[$2] = box.selected? }          
+      else
+          box.selected = culter.send(field)
+          box.addActionListener { |ev| culter.send(field + '=', box.selected?) }
+      end
+    end
+    
+    def box(title, culter, field)
+      box = javax.swing.JCheckBox.new(title)
+      return box
+    end
     
   end
   

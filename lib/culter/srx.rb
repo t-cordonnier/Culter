@@ -130,6 +130,9 @@ module Culter::SRX
 	# Loads a SRX document and can apply the rules
 	class SrxDocument
 		include Culter::XML::Load
+		
+		attr_accessor :cascade
+		attr_reader :formatHandle, :mapRules
 	
 		def initialize(src)
 			callback = SrxCallbacks.new
