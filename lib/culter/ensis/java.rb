@@ -227,6 +227,7 @@ module Culter::Ensis
       super('Segmentation Rules Tester - ' + culter.name)
       @culter = culter
       self.setDefaultCloseOperation(javax.swing.JFrame::DISPOSE_ON_CLOSE);
+      self.contentPane.components.each { |item| item.post_init(culter) }
     end
   end
   
@@ -245,11 +246,14 @@ module Culter::Ensis
     def initialize(culter,resultBox)
       super()
       self.layout = java.awt.BorderLayout.new
-      self.add(text = javax.swing.JTextArea.new, java.awt.BorderLayout::CENTER)
-      text.document.addDocumentListener(MyChangeListener.new(text,culter,resultBox))
-      text.preferredSize = java.awt.Dimension.new(500,100)
-      text.lineWrap = text.wrapStyleWord = true
+      self.add(@text = javax.swing.JTextArea.new, java.awt.BorderLayout::CENTER)
+      @text.preferredSize = java.awt.Dimension.new(500,100)
+      @text.lineWrap = @text.wrapStyleWord = true
+      @resultBox = resultBox
     end    
+    def post_init(culter) 
+      @text.document.addDocumentListener(MyChangeListener.new(@text,culter,@resultBox))
+    end
   end
   
   class MyTableModel < javax.swing.table.AbstractTableModel
@@ -283,6 +287,7 @@ module Culter::Ensis
       @view.columnModel.getColumn(1).preferredWidth = 350
       @view.columnModel.getColumn(2).preferredWidth = 100
     end
+    def post_init(culter) end
     
     def setContents(split)
        @view.model.contents = split
