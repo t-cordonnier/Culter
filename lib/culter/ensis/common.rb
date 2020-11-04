@@ -53,5 +53,21 @@ module Culter::Ensis
     end
   end
   
+  class TemplatesBox
+    def action_add 
+      dial = RuleEditDialog.new(nil); dial.action!
+      if dial.rule != nil then 
+	add_to_view(dial.rule)
+	@map[dial.rule.ruleName] = Culter::CSC::RuleTemplate.new(dial.rule.ruleName)
+	@map[dial.rule.ruleName].rewriteRule = dial.rule
+      end
+    end
+    def action_edit 
+      dial = RuleEditDialog.new(@map[self.selectedItem]); dial.action!
+      if dial.rule != nil then 
+	@map[dial.rule.ruleName].rewriteRule = dial.rule
+      end
+    end
+  end
 end
 

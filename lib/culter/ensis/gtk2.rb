@@ -105,8 +105,8 @@ module Culter::Ensis
       self.add(@view = create_view(culter))
       self.add(btnBox = Gtk::VBox.new)
       before_buttons.each { |btn| btnBox.add(btn) } 
-      btnBox.add(btnAdd = Gtk::Button.new('Add'))
-      btnBox.add(btnEdit = Gtk::Button.new('Edit'))
+      btnBox.add(@btnAdd = Gtk::Button.new('Add'))
+      btnBox.add(@btnEdit = Gtk::Button.new('Edit'))
       btnBox.add(btnRemove = Gtk::Button.new('Remove'))
       btnRemove.signal_connect('clicked') do 
         dialog = Gtk::MessageDialog.new(nil, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
@@ -118,6 +118,7 @@ module Culter::Ensis
             dialog.destroy
 	end
       end
+      @selectedItem = nil; @btnEdit.sensitive = false; @view.selection.signal_connect('changed') { |s| @btnEdit.sensitive = true; @selectedItem = s.selected }      
     end
   end
   
@@ -169,12 +170,65 @@ module Culter::Ensis
       end
       self.expand_all    
     end    
+    attr_reader :map
   end
 
   class TemplatesBox < ButtonsViewBox
+    def initialize(culter)
+      super
+      @btnAdd.signal_connect('clicked') { action_add }
+      @btnEdit.signal_connect('clicked') { action_edit }
+      @map = @view.map
+    end
+    def add_to_view(rule) row = @view.model.append; row[0] = rule.ruleName; end
     def create_view(culter) return TemplatesView.new(culter) end
     def before_buttons() [] end
     def do_remove() puts "OK" end
+    def selectedItem() @selectedItem[0] end
+  end
+  
+  class RuleEditDialog < Gtk::Dialog    
+    def initialize(rule)
+      super(rule == nil ? 'New rule' : 'Edit rule', nil, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+             [Gtk::Stock::OK, Gtk::Dialog::RESPONSE_ACCEPT], [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])      
+      vbox.add(panel1 = Gtk::HBox.new)
+      panel1.add(@rbBreak = Gtk::RadioButton.new('Break'))
+      panel1.add(@rbException = Gtk::RadioButton.new('Exception')) 
+      @rbException.group = @rbBreak.group[0]
+      vbox.add(panel2 = Gtk::HBox.new)
+      panel2.add(Gtk::Label.new('Before: '))
+      panel2.add(@beforeBox = Gtk::Entry.new)
+      vbox.add(panel3 = Gtk::HBox.new)
+      panel3.add(Gtk::Label.new('After: '))
+      panel3.add(@afterBox = Gtk::Entry.new)
+      vbox.add(panel4 = Gtk::HBox.new)
+      panel4.add(Gtk::Label.new('Rule name: '))
+      panel4.add(@nameBox = Gtk::Entry.new)
+      if rule != nil then
+	@rule = rule
+	@nameBox.sensitive = false; if rule.respond_to? 'name' then @nameBox.text = rule.name else @rule.ruleName end
+	if rule.respond_to? 'rewriteRule' then rule = rule.rewriteRule end
+	if rule.break then @rbBreak.active = true else @rbException.active = true end 
+	@beforeBox.text = rule.before; @afterBox.text = rule.after
+      else
+	@rbBreak.active = true
+	#okBtn.sensitive = nameBox.text.length > 0; nameBox.signal_connect('changed') { okBtn.sensitive = nameBox.text.length > 0 }
+      end
+    end
+  
+    attr_reader :rule    
+    def action!()
+        show_all
+	run do |response|
+            if response == Gtk::Dialog::RESPONSE_ACCEPT then 
+	       @rule = Culter::SRX::Rule.new(@rbBreak.active?, @nameBox.text)
+	       @rule.before = @beforeBox.text; @rule.after = @afterBox.text
+	    else
+	      @rule = nil
+	    end
+            destroy
+	end    
+    end
   end
   
   # ------------------------------ Tester ------------------------

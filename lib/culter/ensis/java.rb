@@ -84,8 +84,10 @@ module Culter::Ensis
       self.add(@view = create_view(culter), java.awt.BorderLayout::CENTER)
       self.add(btnBox = javax.swing.Box.new(javax.swing.BoxLayout::Y_AXIS), java.awt.BorderLayout::EAST)
       before_buttons.each { |btn| btnBox.add(btn) } 
-      btnBox.add(btnAdd = javax.swing.JButton.new('Add'))
-      btnBox.add(btnEdit = javax.swing.JButton.new('Edit'))
+      btnBox.add(@btnAdd = javax.swing.JButton.new('Add'))
+      btnBox.add(@btnEdit = javax.swing.JButton.new('Edit'))
+      @btnEdit.enabled = (@view.selectedIndex >= 0)
+      @view.addListSelectionListener { |ev| @btnEdit.enabled = (@view.selectedIndex >= 0) }
       btnBox.add(btnRemove = javax.swing.JButton.new('Remove'))
       btnRemove.addActionListener do |ev|
 	if javax.swing.JOptionPane.showConfirmDialog(nil, 'Are you sure?', 'Are you sure?', javax.swing.JOptionPane::YES_NO_OPTION) == javax.swing.JOptionPane::YES_OPTION then
@@ -93,6 +95,7 @@ module Culter::Ensis
 	end
       end
     end
+    def selectedIndex() @view.selectedIndex end
   end
   
   class RulesMappingBox < ButtonsViewBox
@@ -135,7 +138,11 @@ module Culter::Ensis
     def initialize(culter)
       super
       @view.model = javax.swing.DefaultListModel.new
+      @btnAdd.addActionListener { |ev| action_add }
+      @btnEdit.addActionListener { |ev| action_edit }
     end
+    
+    def add_to_view(rule) @view.model.addElement(rule.ruleName) end
     
     def post_init(culter)
       if culter.respond_to? 'ruleTemplates'
@@ -151,7 +158,67 @@ module Culter::Ensis
        @map.delete(@view.model.elementAt(@view.selectedIndex))
        @view.model.remove(@view.selectedIndex)
     end
+    def selectedItem() @view.model.elementAt(@view.selectedIndex) end
   end  
+  
+  class RuleEditDialog < javax.swing.JDialog
+    def initialize(rule)
+      super(nil, rule == nil ? 'New rule' : 'Edit rule', true)
+      self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))
+      self.contentPane.add(panel1 = javax.swing.JPanel.new)
+      panel1.layout = java.awt.FlowLayout.new
+      panel1.add(rbBreak = javax.swing.JRadioButton.new('Break'))
+      panel1.add(rbException = javax.swing.JRadioButton.new('Exception'))
+      group = javax.swing.ButtonGroup.new; group.add(rbBreak); group.add(rbException)
+      self.contentPane.add(panel2 = javax.swing.JPanel.new)
+      panel2.layout = java.awt.FlowLayout.new
+      panel2.add(javax.swing.JLabel.new('Before: '))
+      panel2.add(beforeBox = javax.swing.JTextField.new(20))      
+      self.contentPane.add(panel3 = javax.swing.JPanel.new)      
+      panel3.layout = java.awt.FlowLayout.new
+      panel3.add(javax.swing.JLabel.new('After: '))
+      panel3.add(afterBox = javax.swing.JTextField.new(20))
+      self.contentPane.add(panel4 = javax.swing.JPanel.new)      
+      panel4.layout = java.awt.FlowLayout.new
+      panel4.add(javax.swing.JLabel.new('Rule name: '))
+      panel4.add(nameBox = javax.swing.JTextField.new(20))
+      self.contentPane.add(panel5 = javax.swing.JPanel.new)
+      panel5.layout = java.awt.FlowLayout.new
+      panel5.add(okBtn = javax.swing.JButton.new('OK'))
+      okBtn.addActionListener do |ev| 
+	@rule = Culter::SRX::Rule.new(rbBreak.selected?, nameBox.text)
+	@rule.before = beforeBox.text; @rule.after = afterBox.text
+	visible = false; dispose 
+      end
+      panel5.add(cancelBtn = javax.swing.JButton.new('Cancel'))
+      cancelBtn.addActionListener { |ev| @rule = nil; visible = false; dispose }
+      if rule != nil then
+	@rule = rule
+	nameBox.enabled = false; if rule.respond_to? 'name' then nameBox.text = rule.name else rule.ruleName end
+	if rule.respond_to? 'rewriteRule' then rule = rule.rewriteRule end
+	if rule.break then rbBreak.selected = true else rbException.selected = true end 
+	beforeBox.text = rule.before; afterBox.text = rule.after
+      else
+	rbBreak.selected = true
+	okBtn.enabled = nameBox.text.length > 0; nameBox.document.addDocumentListener OkButtonUpdater.new(nameBox, okBtn)
+      end
+      pack
+    end
+    
+    class OkButtonUpdater
+        include javax.swing.event.DocumentListener
+        def initialize(textBox,okButton)
+            @textBox = textBox; @okBtn = okButton  
+        end
+    
+        def changeUpdate(ev) end
+        def insertUpdate(ev) @okBtn.enabled = @textBox.text.length > 0; end
+        def removeUpdate(ev) @okBtn.enabled = @textBox.text.length > 0; end
+    end
+    
+    attr_reader :rule    
+    def action!() show end
+  end
   
   # ------------------------------ Tester ------------------------
   
