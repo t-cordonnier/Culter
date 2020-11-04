@@ -103,6 +103,7 @@ module Culter::Ensis
     
     def post_init(culter)  
       culter.defaultMapRule.each do |mr| @view.model.addElement("#{mr.pattern.to_s} => #{mr.rulename}") end
+      @mapRule = culter.defaultMapRule
     end
     def create_view(culter) return javax.swing.JList.new end
     def before_buttons()
@@ -110,7 +111,10 @@ module Culter::Ensis
       btnDown = javax.swing.JButton.new('↓ Move down')
       return [ btnUp, btnDown ]
     end
-    def do_remove() puts "OK" end    
+    def do_remove()
+       @mapRule.delete_at(@view.selectedIndex)
+       @view.model.remove(@view.selectedIndex)
+    end    
   end
   
   class TemplatesBox < ButtonsViewBox
@@ -129,7 +133,10 @@ module Culter::Ensis
     end
     def create_view(culter) return javax.swing.JList.new end
     def before_buttons() [] end
-    def do_remove() puts "OK" end
+    def do_remove()
+       @map.delete(@view.model.elementAt(@view.selectedIndex))
+       @view.model.remove(@view.selectedIndex)
+    end
   end  
   
   # ------------------------------ Tester ------------------------
