@@ -78,8 +78,9 @@ module Culter::Ensis
   end
 
   class ButtonsViewBox < javax.swing.JPanel
-    def initialize(culter)
+    def initialize(window,culter)
       super()
+      @window = window
       self.layout = java.awt.BorderLayout.new
       self.add(@view = create_view(culter), java.awt.BorderLayout::CENTER)
       self.add(btnBox = javax.swing.Box.new(javax.swing.BoxLayout::Y_AXIS), java.awt.BorderLayout::EAST)
@@ -99,8 +100,8 @@ module Culter::Ensis
   end
   
   class RulesMappingBox < ButtonsViewBox
-    def initialize(culter)
-      super
+    def initialize(window,culter)
+      super(window,culter)
       @view.model = javax.swing.DefaultListModel.new
     end
     
@@ -135,8 +136,8 @@ module Culter::Ensis
   end
   
   class TemplatesBox < ButtonsViewBox
-    def initialize(culter)
-      super
+    def initialize(window,culter)
+      super(window,culter)
       @view.model = javax.swing.DefaultListModel.new
       @btnAdd.addActionListener { |ev| action_add }
       @btnEdit.addActionListener { |ev| action_edit }
@@ -162,8 +163,8 @@ module Culter::Ensis
   end  
   
   class RuleEditDialog < javax.swing.JDialog
-    def initialize(rule)
-      super(nil, rule == nil ? 'New rule' : 'Edit rule', true)
+    def initialize(parent,rule)
+      super(parent, rule == nil ? 'New rule' : 'Edit rule', true)
       self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))
       self.contentPane.add(panel1 = javax.swing.JPanel.new)
       panel1.layout = java.awt.FlowLayout.new

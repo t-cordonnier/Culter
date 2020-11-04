@@ -42,8 +42,8 @@ module Culter::Ensis
   class Editor
     def create_all_components
       self.add_pane('Options', OptionsBox.new(@culter))
-      self.add_pane('Rules Mapping', RulesMappingBox.new(@culter))
-      self.add_pane('Rule templates', TemplatesBox.new(@culter))
+      self.add_pane('Rules Mapping', RulesMappingBox.new(self,@culter))
+      self.add_pane('Rule templates', TemplatesBox.new(self,@culter))
     end
     def open_test
       lang = input_dialog('Select Language (ISO-639 code): ')
@@ -55,7 +55,7 @@ module Culter::Ensis
   
   class TemplatesBox
     def action_add 
-      dial = RuleEditDialog.new(nil); dial.action!
+      dial = RuleEditDialog.new(@window,nil); dial.action!
       if dial.rule != nil then 
 	add_to_view(dial.rule)
 	@map[dial.rule.ruleName] = Culter::CSC::RuleTemplate.new(dial.rule.ruleName)
@@ -63,7 +63,7 @@ module Culter::Ensis
       end
     end
     def action_edit 
-      dial = RuleEditDialog.new(@map[self.selectedItem]); dial.action!
+      dial = RuleEditDialog.new(@window,@map[self.selectedItem]); dial.action!
       if dial.rule != nil then 
 	@map[dial.rule.ruleName].rewriteRule = dial.rule
       end

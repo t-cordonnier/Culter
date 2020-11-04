@@ -100,8 +100,9 @@ module Culter::Ensis
   end
   
   class ButtonsViewBox < Gtk::HBox
-    def initialize(culter)
+    def initialize(window,culter)
       super()
+      @window = window
       self.add(@view = create_view(culter))
       self.add(btnBox = Gtk::VBox.new)
       before_buttons.each { |btn| btnBox.add(btn) } 
@@ -174,8 +175,8 @@ module Culter::Ensis
   end
 
   class TemplatesBox < ButtonsViewBox
-    def initialize(culter)
-      super
+    def initialize(window,culter)
+      super(window,culter)
       @btnAdd.signal_connect('clicked') { action_add }
       @btnEdit.signal_connect('clicked') { action_edit }
       @map = @view.map
@@ -188,8 +189,8 @@ module Culter::Ensis
   end
   
   class RuleEditDialog < Gtk::Dialog    
-    def initialize(rule)
-      super(rule == nil ? 'New rule' : 'Edit rule', nil, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+    def initialize(window,rule)
+      super(rule == nil ? 'New rule' : 'Edit rule', window, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
              [Gtk::Stock::OK, Gtk::Dialog::RESPONSE_ACCEPT], [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])      
       vbox.add(panel1 = Gtk::HBox.new)
       panel1.add(@rbBreak = Gtk::RadioButton.new('Break'))
