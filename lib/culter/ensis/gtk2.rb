@@ -99,7 +99,29 @@ module Culter::Ensis
     end
   end
   
-  class RulesMappingBox < Gtk::TreeView
+  class ButtonsViewBox < Gtk::HBox
+    def initialize(culter)
+      super()
+      self.add(@view = create_view(culter))
+      self.add(btnBox = Gtk::VBox.new)
+      before_buttons.each { |btn| btnBox.add(btn) } 
+      btnBox.add(btnAdd = Gtk::Button.new('Add'))
+      btnBox.add(btnEdit = Gtk::Button.new('Edit'))
+      btnBox.add(btnRemove = Gtk::Button.new('Remove'))
+      btnRemove.signal_connect('clicked') do 
+        dialog = Gtk::MessageDialog.new(nil, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+	     Gtk::MessageDialog::QUESTION,
+             Gtk::MessageDialog::BUTTONS_OK_CANCEL,
+             'Are you sure?')
+	dialog.run do |response|
+            if response == Gtk::Dialog::RESPONSE_OK then do_remove end
+            dialog.destroy
+	end
+      end
+    end
+  end
+  
+  class RulesMappingView < Gtk::TreeView
     def initialize(culter)
       super(@model = Gtk::ListStore.new(String,String))
       renderer = Gtk::CellRendererText.new
@@ -118,7 +140,17 @@ module Culter::Ensis
     end
   end
   
-  class TemplatesBox < Gtk::TreeView
+  class RulesMappingBox < ButtonsViewBox
+    def create_view(culter) return RulesMappingView.new(culter) end
+    def before_buttons()
+      btnUp = Gtk::Button.new('↑ Move up')
+      btnDown = Gtk::Button.new('↓ Move down')
+      return [ btnUp, btnDown ]
+    end
+    def do_remove() puts "OK" end
+  end
+  
+  class TemplatesView < Gtk::TreeView
     def initialize(culter)
       super(@model = Gtk::ListStore.new(String))
       renderer = Gtk::CellRendererText.new
@@ -139,6 +171,12 @@ module Culter::Ensis
     end    
   end
 
+  class TemplatesBox < ButtonsViewBox
+    def create_view(culter) return TemplatesView.new(culter) end
+    def before_buttons() [] end
+    def do_remove() puts "OK" end
+  end
+  
   # ------------------------------ Tester ------------------------
   
   class Tester < EnsisWindow

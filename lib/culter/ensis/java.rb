@@ -76,36 +76,60 @@ module Culter::Ensis
     end
     
   end
-  
-  class RulesMappingBox < javax.swing.JPanel
+
+  class ButtonsViewBox < javax.swing.JPanel
     def initialize(culter)
-      super
+      super()
       self.layout = java.awt.BorderLayout.new
-      self.add(@list = javax.swing.JList.new, java.awt.BorderLayout::CENTER)
-      @list.model = javax.swing.DefaultListModel.new
-    end
-    
-    def post_init(culter)  
-      culter.defaultMapRule.each do |mr| @list.model.addElement("#{mr.pattern.to_s} => #{mr.rulename}") end
+      self.add(@view = create_view(culter), java.awt.BorderLayout::CENTER)
+      self.add(btnBox = javax.swing.Box.new(javax.swing.BoxLayout::Y_AXIS), java.awt.BorderLayout::EAST)
+      before_buttons.each { |btn| btnBox.add(btn) } 
+      btnBox.add(btnAdd = javax.swing.JButton.new('Add'))
+      btnBox.add(btnEdit = javax.swing.JButton.new('Edit'))
+      btnBox.add(btnRemove = javax.swing.JButton.new('Remove'))
+      btnRemove.addActionListener do |ev|
+	if javax.swing.JOptionPane.showConfirmDialog(nil, 'Are you sure?', 'Are you sure?', javax.swing.JOptionPane::YES_NO_OPTION) == javax.swing.JOptionPane::YES_OPTION then
+            do_remove
+	end
+      end
     end
   end
   
-  class TemplatesBox < javax.swing.JPanel
+  class RulesMappingBox < ButtonsViewBox
     def initialize(culter)
       super
-      self.layout = java.awt.BorderLayout.new
-      self.add(@list = javax.swing.JList.new, java.awt.BorderLayout::CENTER)
-      @list.model = javax.swing.DefaultListModel.new
+      @view.model = javax.swing.DefaultListModel.new
+    end
+    
+    def post_init(culter)  
+      culter.defaultMapRule.each do |mr| @view.model.addElement("#{mr.pattern.to_s} => #{mr.rulename}") end
+    end
+    def create_view(culter) return javax.swing.JList.new end
+    def before_buttons()
+      btnUp = javax.swing.JButton.new('↑ Move up')
+      btnDown = javax.swing.JButton.new('↓ Move down')
+      return [ btnUp, btnDown ]
+    end
+    def do_remove() puts "OK" end    
+  end
+  
+  class TemplatesBox < ButtonsViewBox
+    def initialize(culter)
+      super
+      @view.model = javax.swing.DefaultListModel.new
     end
     
     def post_init(culter)
       if culter.respond_to? 'ruleTemplates'
 	 @map = culter.ruleTemplates
-         culter.ruleTemplates.each do |name,rule| @list.model.addElement(name) end
+         culter.ruleTemplates.each do |name,rule| @view.model.addElement(name) end
       else
 	 @map = {}
       end
     end
+    def create_view(culter) return javax.swing.JList.new end
+    def before_buttons() [] end
+    def do_remove() puts "OK" end
   end  
   
   # ------------------------------ Tester ------------------------
