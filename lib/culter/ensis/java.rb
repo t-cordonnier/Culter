@@ -108,7 +108,21 @@ module Culter::Ensis
     def create_view(culter) return javax.swing.JList.new end
     def before_buttons()
       btnUp = javax.swing.JButton.new('↑ Move up')
+      btnUp.enabled = (@view.selectedIndex > 0)
+      @view.addListSelectionListener { |ev| btnUp.enabled = (@view.selectedIndex > 0) }
+      btnUp.addActionListener do |ev|
+       idx = @view.selectedIndex; el = @view.model.elementAt(idx)
+       @view.model.remove(idx); @view.model.insertElementAt(el, idx - 1)
+       @mapRule.delete_at(idx); @mapRule.insert(idx - 1, el)       
+      end
       btnDown = javax.swing.JButton.new('↓ Move down')
+      btnDown.enabled = (@view.selectedIndex >= 0) and (@view.selectedIndex < @view.model.size - 1)
+      @view.addListSelectionListener { |ev| btnDown.enabled = (@view.selectedIndex >= 0) and (@view.selectedIndex < @view.model.size - 1) }
+      btnDown.addActionListener do |ev|
+       idx = @view.selectedIndex; el = @view.model.elementAt(idx)
+       @view.model.remove(idx); @view.model.insertElementAt(el, idx + 1)
+       @mapRule.delete_at(idx); @mapRule.insert(idx + 1, el)       
+      end
       return [ btnUp, btnDown ]
     end
     def do_remove()
