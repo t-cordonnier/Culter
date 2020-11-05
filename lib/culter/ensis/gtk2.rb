@@ -108,6 +108,8 @@ module Culter::Ensis
       before_buttons.each { |btn| btnBox.add(btn) } 
       btnBox.add(@btnAdd = Gtk::Button.new('Add'))
       btnBox.add(@btnEdit = Gtk::Button.new('Edit'))
+      @btnAdd.signal_connect('clicked') { action_add }
+      @btnEdit.signal_connect('clicked') { action_edit }
       btnBox.add(btnRemove = Gtk::Button.new('Remove'))
       btnRemove.signal_connect('clicked') do 
         dialog = Gtk::MessageDialog.new(nil, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
@@ -133,16 +135,27 @@ module Culter::Ensis
       append_column Gtk::TreeViewColumn.new("Name",renderer)
       columns[1].add_attribute renderer, "text", 1
       @model.clear
-      culter.defaultMapRule.each do |mr|
+      culter.defaultMapRule.each { |mr| add_to_view(mr) }
+      self.expand_all    
+    end
+    def refresh_item(idx,mr)
+	row = @model.append
+	row[0] = mr.pattern.to_s
+	row[1] = mr.rulename    
+    end
+    def add_to_view(mr) 
 	row = @model.append
 	row[0] = mr.pattern.to_s
 	row[1] = mr.rulename
-      end
-      self.expand_all    
     end
   end
   
   class RulesMappingBox < ButtonsViewBox
+    def initialize(window,culter)
+      super(window,culter)
+      @mapRule = culter.defaultMapRule
+      @langRules = culter.langRules
+    end
     def create_view(culter) return RulesMappingView.new(culter) end
     def before_buttons()
       btnUp = Gtk::Button.new('↑ Move up')
@@ -150,7 +163,58 @@ module Culter::Ensis
       return [ btnUp, btnDown ]
     end
     def do_remove() puts "OK" end
+    def refresh_item(idx,mr) @view.refresh_item(idx,mr) end
+    def add_to_view(mr) @view.add_to_view(mr) end
+    def selectedIndex() @selectedItem.to_s.to_i end
   end
+  
+  class MappingEditDialog < Gtk::Dialog 
+    def initialize(parent,langRules,maprule,mapping)
+      super(mapping == nil ? 'New mapping' : 'Edit mapping', parent, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+             [Gtk::Stock::OK, Gtk::Dialog::RESPONSE_ACCEPT], [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])      
+      vbox.add(panel1 = Gtk::HBox.new)
+      panel1.add(Gtk::Label.new('Language (expression): '))
+      panel1.add(@langBox = Gtk::Entry.new)
+      vbox.add(panel2 = Gtk::HBox.new)
+      panel2.add(@rbExisting = Gtk::RadioButton.new('Existing language rule: '))
+      panel2.add(@cbExisting = Gtk::ComboBox.new())
+      langRules.each { |k,v| @cbExisting.append_text(k) }
+      panel2.add(@btnEditExisting = Gtk::Button.new('Edit'))
+      vbox.add(panel3 = Gtk::HBox.new)      
+      panel3.add(@rbNewMapping = Gtk::RadioButton.new('New language rule: '))
+      panel3.add(@txtNewMappingName = Gtk::Entry.new)
+      panel3.add(@btnEditNew = Gtk::Button.new('Edit'))
+      @rbNewMapping.group = @rbExisting.group[0]
+      @rbExisting.signal_connect('toggled') { @cbExisting.sensitive = @btnEditExisting.sensitive = true; @txtNewMappingName.sensitive = @btnEditNew.sensitive = false }
+      @rbNewMapping.signal_connect('toggled') { @cbExisting.sensitive = @btnEditExisting.sensitive = false; @txtNewMappingName.sensitive = @btnEditNew.sensitive = true }
+      if mapping != nil then
+	@mapping = mapping
+	@rbExisting.active = true; # cbExisting.selectedItem = mapping.rulename
+	@cbExisting.sensitive = @btnEditExisting.sensitive = true; @txtNewMappingName.sensitive = @btnEditNew.sensitive = false
+	@langBox.text = mapping.pattern.to_s	
+      else
+	@rbNewMapping.active = true
+	@cbExisting.sensitive = @btnEditExisting.sensitive = false; @txtNewMappingName.sensitive = @btnEditNew.sensitive = true
+      end
+    end
+    
+    attr_reader :mapping
+    def action!()
+        show_all
+	run do |response|
+            if response == Gtk::Dialog::RESPONSE_ACCEPT then 
+	       if @rbNewMapping.active? then
+	          @mapping = Culter::SRX::LangMap.new(Regexp.new(@langBox.text), @txtNewMappingName.text)
+	       else
+	           @mapping = Culter::SRX::LangMap.new(Regexp.new(@langBox.text), @cbExisting.active_text)	  
+	       end
+	    else
+	      @mapping = nil
+	    end
+            destroy
+	end    
+    end
+  end  
   
   class TemplatesView < Gtk::TreeView
     def initialize(culter)
@@ -172,13 +236,11 @@ module Culter::Ensis
       self.expand_all    
     end    
     attr_reader :map
-  end
+  end  
 
   class TemplatesBox < ButtonsViewBox
     def initialize(window,culter)
       super(window,culter)
-      @btnAdd.signal_connect('clicked') { action_add }
-      @btnEdit.signal_connect('clicked') { action_edit }
       @map = @view.map
     end
     def add_to_view(rule) row = @view.model.append; row[0] = rule.ruleName; end

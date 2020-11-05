@@ -95,6 +95,8 @@ module Culter::Ensis
             do_remove
 	end
       end
+      @btnAdd.addActionListener { |ev| action_add }
+      @btnEdit.addActionListener { |ev| action_edit }
     end
     def selectedIndex() @view.selectedIndex end
   end
@@ -108,6 +110,7 @@ module Culter::Ensis
     def post_init(culter)  
       culter.defaultMapRule.each do |mr| @view.model.addElement("#{mr.pattern.to_s} => #{mr.rulename}") end
       @mapRule = culter.defaultMapRule
+      @langRules = culter.langRules
     end
     def create_view(culter) return javax.swing.JList.new end
     def before_buttons()
@@ -133,14 +136,70 @@ module Culter::Ensis
        @mapRule.delete_at(@view.selectedIndex)
        @view.model.remove(@view.selectedIndex)
     end    
+    def refresh_item(idx,mr) @view.model.setElementAt("#{mr.pattern.to_s} => #{mr.rulename}",idx) end
+    def add_to_view(mr) 
+      idx = @view.selectedIndex; if idx < 0 then idx = 0; end 
+      @view.model.insertElementAt("#{mr.pattern.to_s} => #{mr.rulename}",idx) 
+    end
+    def selectedIndex() @view.selectedIndex end
   end
+  
+  class MappingEditDialog < javax.swing.JDialog
+    def initialize(parent,langRules,maprule,mapping)
+      super(parent, mapping == nil ? 'New mapping' : 'Edit mapping', true)
+      self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))
+      self.contentPane.add(panel1 = javax.swing.JPanel.new)
+      panel1.layout = java.awt.FlowLayout.new
+      panel1.add(javax.swing.JLabel.new('Language (expression): '))
+      panel1.add(langBox = javax.swing.JTextField.new(30))
+      self.contentPane.add(panel2 = javax.swing.JPanel.new)
+      panel2.layout = java.awt.FlowLayout.new
+      panel2.add(rbExisting = javax.swing.JRadioButton.new('Existing language rule: '))
+      panel2.add(cbExisting = javax.swing.JComboBox.new())
+      langRules.each { |k,v| cbExisting.model.addElement(k) }
+      panel2.add(btnEditExisting = javax.swing.JButton.new('Edit'))
+      self.contentPane.add(panel3 = javax.swing.JPanel.new)      
+      panel3.layout = java.awt.FlowLayout.new
+      panel3.add(rbNewMapping = javax.swing.JRadioButton.new('New language rule: '))
+      panel3.add(txtNewMappingName = javax.swing.JTextField.new(20))
+      panel3.add(btnEditNew = javax.swing.JButton.new('Edit'))
+      group = javax.swing.ButtonGroup.new; group.add(rbExisting); group.add(rbNewMapping)
+      rbExisting.addActionListener { |ev| cbExisting.enabled = btnEditExisting.enabled = true; txtNewMappingName.enabled = btnEditNew.enabled = false }
+      rbNewMapping.addActionListener { |ev| cbExisting.enabled = btnEditExisting.enabled = false; txtNewMappingName.enabled = btnEditNew.enabled = true }
+      self.contentPane.add(panel4 = javax.swing.JPanel.new)      
+      panel4.layout = java.awt.FlowLayout.new
+      panel4.add(okBtn = javax.swing.JButton.new('OK'))
+      okBtn.addActionListener do |ev| 
+	if rbNewMapping.selected then
+	  @mapping = Culter::SRX::LangMap.new(Regexp.new(langBox.text), txtNewMappingName.text)
+	else
+	  @mapping = Culter::SRX::LangMap.new(Regexp.new(langBox.text), cbExisting.selectedItem.to_s)	  
+	end
+	visible = false; dispose 
+      end
+      panel4.add(cancelBtn = javax.swing.JButton.new('Cancel'))
+      cancelBtn.addActionListener { |ev| @mapping = nil; visible = false; dispose }
+      if mapping != nil then
+	@mapping = mapping
+	rbExisting.selected = true; cbExisting.selectedItem = mapping.rulename
+	cbExisting.enabled = btnEditExisting.enabled = true; txtNewMappingName.enabled = btnEditNew.enabled = false
+	langBox.text = mapping.pattern.to_s	
+      else
+	rbNewMapping.selected = true
+	cbExisting.enabled = btnEditExisting.enabled = false; txtNewMappingName.enabled = btnEditNew.enabled = true
+      end
+      pack
+    end
+    
+    attr_reader :mapping
+    def action!() show end
+  end
+  
   
   class TemplatesBox < ButtonsViewBox
     def initialize(window,culter)
       super(window,culter)
       @view.model = javax.swing.DefaultListModel.new
-      @btnAdd.addActionListener { |ev| action_add }
-      @btnEdit.addActionListener { |ev| action_edit }
     end
     
     def add_to_view(rule) @view.model.addElement(rule.ruleName) end

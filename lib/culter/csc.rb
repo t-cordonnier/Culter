@@ -132,7 +132,7 @@ module Culter::CSC
 	##
 	# Loads a SRX document and can apply the rules
 	class CscDocument
-		attr_reader :ruleTemplates
+		attr_reader :ruleTemplates, :langRules
 	
 		##
 		# Produce an usable segmenter for the given language.

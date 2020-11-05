@@ -132,7 +132,7 @@ module Culter::SRX
 		include Culter::XML::Load
 		
 		attr_accessor :cascade
-		attr_reader :formatHandle, :mapRules, :defaultMapRule
+		attr_reader :formatHandle, :mapRules, :defaultMapRule, :langRules
 	
 		def initialize(src)
 			callback = SrxCallbacks.new

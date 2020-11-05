@@ -53,6 +53,24 @@ module Culter::Ensis
     end
   end
   
+  class RulesMappingBox
+    def action_add 
+      dial = MappingEditDialog.new(@window,@langRules,@mapRule,nil); dial.action!
+      if dial.mapping != nil then 
+	add_to_view(dial.mapping)
+	idx = selectedIndex; if idx < 0 then idx = 0; end 
+	@mapRule.insert idx, dial.mapping
+      end
+    end
+    def action_edit 
+      dial = MappingEditDialog.new(@window,@langRules,@mapRule,@mapRule[selectedIndex]); dial.action!
+      if dial.mapping != nil then 
+	@mapRule[selectedIndex] = dial.mapping
+	refresh_item(selectedIndex,dial.mapping)
+      end
+    end
+  end
+  
   class TemplatesBox
     def action_add 
       dial = RuleEditDialog.new(@window,nil); dial.action!
