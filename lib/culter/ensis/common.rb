@@ -71,6 +71,17 @@ module Culter::Ensis
     end
   end
   
+  class LangRuleView
+    def action_edit 
+      rule = @langRule[self.selectedIndex]
+      if rule.is_a? Culter::SRX::Rule then
+	dial = RuleEditDialog.new(@window,rule); dial.action!
+	if dial.rule != nil then @langRule[self.selectedIndex] = dial.rule; refresh_item(self.selectedIndex, dial.rule) end
+      #elsif item.is_a? Culter::CSC::ApplyRuleTemplate then
+      end 
+    end
+  end
+  
   class TemplatesBox
     def action_add 
       dial = RuleEditDialog.new(@window,nil); dial.action!

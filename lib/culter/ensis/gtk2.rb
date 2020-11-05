@@ -180,10 +180,12 @@ module Culter::Ensis
       panel2.add(@cbExisting = Gtk::ComboBox.new())
       langRules.each { |k,v| @cbExisting.append_text(k) }
       panel2.add(@btnEditExisting = Gtk::Button.new('Edit'))
+      @btnEditExisting.signal_connect('clicked') { dial = LangRuleEditDialog.new(self,@cbExisting.active_text,langRules[@cbExisting.active_text]); dial.action! }
       vbox.add(panel3 = Gtk::HBox.new)      
       panel3.add(@rbNewMapping = Gtk::RadioButton.new('New language rule: '))
       panel3.add(@txtNewMappingName = Gtk::Entry.new)
       panel3.add(@btnEditNew = Gtk::Button.new('Edit'))
+      @btnEditNew.signal_connect('clicked') { dial = LangRuleEditDialog.new(self,@txtNewMappingName.text,[]); dial.action! }
       @rbNewMapping.group = @rbExisting.group[0]
       @rbExisting.signal_connect('toggled') { @cbExisting.sensitive = @btnEditExisting.sensitive = true; @txtNewMappingName.sensitive = @btnEditNew.sensitive = false }
       @rbNewMapping.signal_connect('toggled') { @cbExisting.sensitive = @btnEditExisting.sensitive = false; @txtNewMappingName.sensitive = @btnEditNew.sensitive = true }
@@ -214,6 +216,36 @@ module Culter::Ensis
             destroy
 	end    
     end
+  end  
+  
+  class LangRuleEditDialog < Gtk::Dialog 
+    def initialize(parent,name,langRule)
+      super(name, parent, Gtk::Dialog::MODAL | Gtk::Dialog::DESTROY_WITH_PARENT,
+             [Gtk::Stock::OK, Gtk::Dialog::RESPONSE_ACCEPT], [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])      
+      vbox.add(@view = LangRuleView.new(parent,langRule))
+    end
+    def action!()
+        show_all
+	run do |response|
+        #    if response == Gtk::Dialog::RESPONSE_ACCEPT then 
+	#      
+	#    else
+	#      @mapping = nil
+	#    end
+            destroy
+	end    
+    end
+  end  
+  
+  class LangRuleView < ButtonsViewBox
+    def initialize(window,langRule)
+      super(window,langRule)
+    end
+    def create_view(langRule)
+      model = Gtk::ListStore.new(String)
+      return Gtk::TreeView.new(model)    
+    end
+    def before_buttons() [] end
   end  
   
   class TemplatesView < Gtk::TreeView

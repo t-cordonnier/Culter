@@ -36,6 +36,8 @@ module Culter::CSC
 			end
 		end
 		
+		def name() @ruleRef.name end
+		
 		def to_rules(mode = 'machine')
 			if mode == 'machine'
 				# Builds one long rule : this is faster

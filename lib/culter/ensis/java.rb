@@ -158,11 +158,17 @@ module Culter::Ensis
       panel2.add(cbExisting = javax.swing.JComboBox.new())
       langRules.each { |k,v| cbExisting.model.addElement(k) }
       panel2.add(btnEditExisting = javax.swing.JButton.new('Edit'))
+      btnEditExisting.addActionListener do |ev|
+	dial = LangRuleEditDialog.new(self,cbExisting.selectedItem,langRules[cbExisting.selectedItem]); dial.action!
+      end
       self.contentPane.add(panel3 = javax.swing.JPanel.new)      
       panel3.layout = java.awt.FlowLayout.new
       panel3.add(rbNewMapping = javax.swing.JRadioButton.new('New language rule: '))
       panel3.add(txtNewMappingName = javax.swing.JTextField.new(20))
       panel3.add(btnEditNew = javax.swing.JButton.new('Edit'))
+      btnEditNew.addActionListener do |ev|
+	dial = LangRuleEditDialog.new(self,txtNewMappingName.text,[]); dial.action!
+      end
       group = javax.swing.ButtonGroup.new; group.add(rbExisting); group.add(rbNewMapping)
       rbExisting.addActionListener { |ev| cbExisting.enabled = btnEditExisting.enabled = true; txtNewMappingName.enabled = btnEditNew.enabled = false }
       rbNewMapping.addActionListener { |ev| cbExisting.enabled = btnEditExisting.enabled = false; txtNewMappingName.enabled = btnEditNew.enabled = true }
@@ -195,6 +201,65 @@ module Culter::Ensis
     def action!() show end
   end
   
+  class LangRuleEditDialog < javax.swing.JDialog
+    def initialize(parent,name,langRule)
+      super(parent, name, true)
+      self.contentPane.setLayout(javax.swing.BoxLayout.new(self.contentPane, javax.swing.BoxLayout::Y_AXIS))
+      self.contentPane.add(@view = LangRuleView.new(parent,langRule))
+      self.contentPane.add(panel4 = javax.swing.JPanel.new)      
+      panel4.layout = java.awt.FlowLayout.new
+      panel4.add(okBtn = javax.swing.JButton.new('OK'))
+      okBtn.addActionListener do |ev| 
+	visible = false; dispose 
+      end
+      panel4.add(cancelBtn = javax.swing.JButton.new('Cancel'))
+      cancelBtn.addActionListener { |ev| @mapping = nil; visible = false; dispose }      
+      pack
+    end
+    def action!() show end
+  end
+  
+  class LangRuleView < ButtonsViewBox
+    def initialize(window,langRule)
+      super(window,langRule)
+      @view.model = javax.swing.DefaultListModel.new
+      @langRule = langRule
+      langRule.each { |item| @view.model.addElement(as_string(item)) }
+    end
+    def create_view(langRule) return javax.swing.JList.new end    
+    def before_buttons()
+      btnUp = javax.swing.JButton.new('↑ Move up')
+      btnUp.enabled = (@view.selectedIndex > 0)
+      @view.addListSelectionListener { |ev| btnUp.enabled = (@view.selectedIndex > 0) }
+      btnUp.addActionListener do |ev|
+       idx = @view.selectedIndex; el = @view.model.elementAt(idx)
+       @view.model.remove(idx); @view.model.insertElementAt(el, idx - 1)
+       @langRule.delete_at(idx); @langRule.insert(idx - 1, el)       
+      end
+      btnDown = javax.swing.JButton.new('↓ Move down')
+      btnDown.enabled = (@view.selectedIndex >= 0) and (@view.selectedIndex < @view.model.size - 1)
+      @view.addListSelectionListener { |ev| btnDown.enabled = (@view.selectedIndex >= 0) and (@view.selectedIndex < @view.model.size - 1) }
+      btnDown.addActionListener do |ev|
+       idx = @view.selectedIndex; el = @view.model.elementAt(idx)
+       @view.model.remove(idx); @view.model.insertElementAt(el, idx + 1)
+       @langRule.delete_at(idx); @langRule.insert(idx + 1, el)       
+      end
+      return [ btnUp, btnDown ]
+    end
+    def as_string(rule)
+	str = rule.to_s
+	if rule.is_a? Culter::SRX::Rule then
+	   str = ''
+	   if rule.ruleName != nil and rule.ruleName.length > 0 then str = rule.ruleName + ': ' end
+	   if rule.break then str = str + 'Break' else str = str + 'Exception' end
+	   return str + " between '#{rule.before}' and '#{rule.after}'"
+	elsif rule.is_a? Culter::CSC::ApplyRuleTemplate then
+	   return "Apply template '#{rule.name}'"
+	end       
+    end
+    def selectedIndex() @view.selectedIndex end
+    def refresh_item(idx,rule) @view.model.setElementAt(as_string(rule),idx) end
+  end
   
   class TemplatesBox < ButtonsViewBox
     def initialize(window,culter)
